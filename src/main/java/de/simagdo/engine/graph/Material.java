@@ -1,19 +1,15 @@
 package de.simagdo.engine.graph;
 
+import de.simagdo.engine.graph.text.Texture;
 import org.joml.Vector4f;
 
 public class Material {
 
     private static final Vector4f DEFAULT_COLOUR = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
-
     private Vector4f ambientColour;
-
     private Vector4f diffuseColour;
-
     private Vector4f specularColour;
-
     private float reflectance;
-
     private Texture texture;
 
     public Material() {
@@ -61,7 +57,7 @@ public class Material {
     }
 
     public Vector4f getSpecularColour() {
-        return specularColour;
+        return this.specularColour;
     }
 
     public void setSpecularColour(Vector4f specularColour) {

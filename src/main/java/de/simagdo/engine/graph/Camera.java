@@ -9,7 +9,7 @@ public class Camera {
 
     public Camera() {
         this.position = new Vector3f(0, 0, 0);
-        this.rotation = new Vector3f(0, 0, 0);
+        rotation = new Vector3f(0, 0, 0);
     }
 
     public Camera(Vector3f position, Vector3f rotation) {
@@ -18,7 +18,7 @@ public class Camera {
     }
 
     public Vector3f getPosition() {
-        return position;
+        return this.position;
     }
 
     public void setPosition(float x, float y, float z) {
@@ -33,15 +33,14 @@ public class Camera {
             this.position.z += (float) Math.cos(Math.toRadians(this.rotation.y)) * offsetZ;
         }
         if (offsetX != 0) {
-            this.position.x += (float) Math.sin(Math.toRadians(this.rotation.y - 90)) * -1.0f * offsetZ;
-            this.position.z += (float) Math.cos(Math.toRadians(this.rotation.y - 90)) * offsetZ;
+            this.position.x += (float) Math.sin(Math.toRadians(this.rotation.y - 90)) * -1.0f * offsetX;
+            this.position.z += (float) Math.cos(Math.toRadians(this.rotation.y - 90)) * offsetX;
         }
-
-        position.y += offsetY;
+        this.position.y += offsetY;
     }
 
     public Vector3f getRotation() {
-        return rotation;
+        return this.rotation;
     }
 
     public void setRotation(float x, float y, float z) {
@@ -51,9 +50,8 @@ public class Camera {
     }
 
     public void moveRotation(float offsetX, float offsetY, float offsetZ) {
-        this.rotation.x = +offsetX;
-        this.rotation.y = +offsetY;
-        this.rotation.z = +offsetZ;
+        this.rotation.x += offsetX;
+        this.rotation.y += offsetY;
+        this.rotation.z += offsetZ;
     }
-
 }

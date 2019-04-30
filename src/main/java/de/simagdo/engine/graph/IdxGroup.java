@@ -2,7 +2,7 @@ package de.simagdo.engine.graph;
 
 public class IdxGroup {
 
-    private static final int NO_VALUE = -1;
+    private final int NO_VALUE = -1;
     private int idxPos;
     private int idxTextCoord;
     private int idxVecNormal;
@@ -13,12 +13,12 @@ public class IdxGroup {
         this.idxVecNormal = NO_VALUE;
     }
 
-    public static int getNoValue() {
-        return NO_VALUE;
+    public int getNoValue() {
+        return this.NO_VALUE;
     }
 
     public int getIdxPos() {
-        return idxPos;
+        return this.idxPos;
     }
 
     public void setIdxPos(int idxPos) {
@@ -26,7 +26,7 @@ public class IdxGroup {
     }
 
     public int getIdxTextCoord() {
-        return idxTextCoord;
+        return this.idxTextCoord;
     }
 
     public void setIdxTextCoord(int idxTextCoord) {
@@ -34,7 +34,7 @@ public class IdxGroup {
     }
 
     public int getIdxVecNormal() {
-        return idxVecNormal;
+        return this.idxVecNormal;
     }
 
     public void setIdxVecNormal(int idxVecNormal) {

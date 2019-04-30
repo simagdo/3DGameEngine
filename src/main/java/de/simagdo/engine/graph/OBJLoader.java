@@ -9,7 +9,7 @@ import java.util.List;
 
 public class OBJLoader {
 
-    public Mesh loadMesh(String fileName) throws Exception {
+    public static Mesh loadMesh(String fileName) throws Exception {
         List<String> lines = Utils.readAllLines(fileName);
 
         List<Vector3f> vertices = new ArrayList<>();
@@ -55,8 +55,7 @@ public class OBJLoader {
         return reorderLists(vertices, textures, normals, faces);
     }
 
-    private Mesh reorderLists(List<Vector3f> posList, List<Vector2f> textCoordList,
-                              List<Vector3f> normList, List<Face> facesList) {
+    private static Mesh reorderLists(List<Vector3f> posList, List<Vector2f> textCoordList, List<Vector3f> normList, List<Face> facesList) {
 
         List<Integer> indices = new ArrayList();
         // Create position array in the order it has been declared
@@ -84,27 +83,79 @@ public class OBJLoader {
         return mesh;
     }
 
-    private void processFaceVertex(IdxGroup indices, List<Vector2f> textCoordList,
-                                   List<Vector3f> normList, List<Integer> indicesList,
-                                   float[] texCoordArr, float[] normArr) {
+    private static void processFaceVertex(IdxGroup indices, List<Vector2f> textCoordList, List<Vector3f> normList, List<Integer> indicesList, float[] texCoordArr, float[] normArr) {
 
         // Set index for vertex coordinates
-        int posIndex = indices.getIdxPos();
+        int posIndex = indices.idxPos;
         indicesList.add(posIndex);
 
-        // Reorder texture coordinates
-        if (indices.getIdxTextCoord() >= 0) {
-            Vector2f textCoord = textCoordList.get(indices.getIdxTextCoord());
+        // Reorder text coordinates
+        if (indices.idxTextCoord >= 0) {
+            Vector2f textCoord = textCoordList.get(indices.idxTextCoord);
             texCoordArr[posIndex * 2] = textCoord.x;
             texCoordArr[posIndex * 2 + 1] = 1 - textCoord.y;
         }
-        if (indices.getIdxVecNormal() >= 0) {
+        if (indices.idxVecNormal >= 0) {
             // Reorder vectornormals
-            Vector3f vecNorm = normList.get(indices.getIdxVecNormal());
+            Vector3f vecNorm = normList.get(indices.idxVecNormal);
             normArr[posIndex * 3] = vecNorm.x;
             normArr[posIndex * 3 + 1] = vecNorm.y;
             normArr[posIndex * 3 + 2] = vecNorm.z;
         }
     }
 
+    protected static class Face {
+
+        /**
+         * List of idxGroup groups for a face triangle (3 vertices per face).
+         */
+        private IdxGroup[] idxGroups;
+
+        public Face(String v1, String v2, String v3) {
+            idxGroups = new IdxGroup[3];
+            // Parse the lines
+            idxGroups[0] = parseLine(v1);
+            idxGroups[1] = parseLine(v2);
+            idxGroups[2] = parseLine(v3);
+        }
+
+        private IdxGroup parseLine(String line) {
+            IdxGroup idxGroup = new IdxGroup();
+
+            String[] lineTokens = line.split("/");
+            int length = lineTokens.length;
+            idxGroup.idxPos = Integer.parseInt(lineTokens[0]) - 1;
+            if (length > 1) {
+                // It can be empty if the obj does not define text coords
+                String textCoord = lineTokens[1];
+                idxGroup.idxTextCoord = textCoord.length() > 0 ? Integer.parseInt(textCoord) - 1 : IdxGroup.NO_VALUE;
+                if (length > 2) {
+                    idxGroup.idxVecNormal = Integer.parseInt(lineTokens[2]) - 1;
+                }
+            }
+
+            return idxGroup;
+        }
+
+        public IdxGroup[] getFaceVertexIndices() {
+            return idxGroups;
+        }
+    }
+
+    protected static class IdxGroup {
+
+        public static final int NO_VALUE = -1;
+
+        public int idxPos;
+
+        public int idxTextCoord;
+
+        public int idxVecNormal;
+
+        public IdxGroup() {
+            this.idxPos = NO_VALUE;
+            this.idxTextCoord = NO_VALUE;
+            this.idxVecNormal = NO_VALUE;
+        }
+    }
 }

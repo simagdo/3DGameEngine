@@ -22,7 +22,7 @@ public class Face {
         if (length > 1) {
             //It can be empty if the Obj does not define text coords
             String textCoord = lineTokens[1];
-            idxGroup.setIdxTextCoord(textCoord.length() > 0 ? Integer.parseInt(textCoord) - 1 : IdxGroup.getNoValue());
+            idxGroup.setIdxTextCoord(textCoord.length() > 0 ? Integer.parseInt(textCoord) - 1 : idxGroup.getNoValue());
         }
 
         return idxGroup;

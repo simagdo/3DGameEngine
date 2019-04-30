@@ -1,14 +1,20 @@
-package de.simagdo.engine;
+package de.simagdo.engine.items;
 
 import de.simagdo.engine.graph.Mesh;
 import org.joml.Vector3f;
 
 public class GameItem {
 
-    private final Mesh mesh;
+    private Mesh mesh;
     private final Vector3f position;
     private float scale;
     private final Vector3f rotation;
+
+    public GameItem() {
+        this.position = new Vector3f(0, 0, 0);
+        this.scale = 1;
+        this.rotation = new Vector3f(0, 0, 0);
+    }
 
     public GameItem(Mesh mesh) {
         this.mesh = mesh;
@@ -49,4 +55,7 @@ public class GameItem {
         this.rotation.z = z;
     }
 
+    public void setMesh(Mesh mesh) {
+        this.mesh = mesh;
+    }
 }

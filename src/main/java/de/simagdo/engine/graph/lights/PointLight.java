@@ -1,12 +1,16 @@
-package de.simagdo.engine.graph;
+package de.simagdo.engine.graph.lights;
 
+import de.simagdo.engine.graph.Attenuation;
 import org.joml.Vector3f;
 
 public class PointLight {
 
     private Vector3f color;
+
     private Vector3f position;
-    private float intensity;
+
+    protected float intensity;
+
     private Attenuation attenuation;
 
     public PointLight(Vector3f color, Vector3f position, float intensity) {
@@ -27,7 +31,7 @@ public class PointLight {
     }
 
     public Vector3f getColor() {
-        return this.color;
+        return color;
     }
 
     public void setColor(Vector3f color) {
@@ -35,7 +39,7 @@ public class PointLight {
     }
 
     public Vector3f getPosition() {
-        return this.position;
+        return position;
     }
 
     public void setPosition(Vector3f position) {
@@ -43,7 +47,7 @@ public class PointLight {
     }
 
     public float getIntensity() {
-        return this.intensity;
+        return intensity;
     }
 
     public void setIntensity(float intensity) {
@@ -51,7 +55,7 @@ public class PointLight {
     }
 
     public Attenuation getAttenuation() {
-        return this.attenuation;
+        return attenuation;
     }
 
     public void setAttenuation(Attenuation attenuation) {
