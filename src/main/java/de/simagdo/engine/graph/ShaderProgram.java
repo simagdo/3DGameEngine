@@ -3,6 +3,7 @@ package de.simagdo.engine.graph;
 import de.simagdo.engine.graph.lights.DirectionalLight;
 import de.simagdo.engine.graph.lights.PointLight;
 import de.simagdo.engine.graph.lights.SpotLight;
+import de.simagdo.engine.graph.weather.Fog;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -119,6 +120,18 @@ public class ShaderProgram {
         this.setUniform(uniformName + ".pl", spotLight.getPointLight());
         this.setUniform(uniformName + ".conedir", spotLight.getConeDirection());
         this.setUniform(uniformName + ".cutoff", spotLight.getCutOff());
+    }
+
+    public void createFogUniform(String uniformName) throws Exception {
+        this.createUniform(uniformName + ".activeFog");
+        this.createUniform(uniformName + ".colour");
+        this.createUniform(uniformName + ".density");
+    }
+
+    public void setUniform(String uniformName, Fog fog) {
+        this.setUniform(uniformName + ".activeFog", fog.isActive() ? 1 : 0);
+        this.setUniform(uniformName + ".colour", fog.getColour());
+        this.setUniform(uniformName + ".density", fog.getDensity());
     }
 
     public void createVertexShader(String shaderCode) throws Exception {

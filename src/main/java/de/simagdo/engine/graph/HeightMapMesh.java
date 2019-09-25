@@ -18,50 +18,29 @@ import static org.lwjgl.stb.STBImage.*;
 public class HeightMapMesh {
 
     private static final int MAX_COLOUR = 255 * 255 * 255;
-    private static final float STARTX = -0.5f;
-    private static final float STARTZ = -0.5f;
+    public static final float STARTX = -0.5f;
+    public static final float STARTZ = -0.5f;
     private final float minY;
     private final float maxY;
     private final Mesh mesh;
+    private final float[][] heightArray;
 
-    public HeightMapMesh(float minY, float maxY, String heightMapFile, String textureFile, int textInc) throws Exception {
+    public HeightMapMesh(float minY, float maxY, ByteBuffer heightMapImage,int width,int height, String textureFile, int textInc) throws Exception {
         this.minY = minY;
         this.maxY = maxY;
-
-        ByteBuffer buf = null;
-        int width;
-        int height;
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer w = stack.mallocInt(1);
-            IntBuffer h = stack.mallocInt(1);
-            IntBuffer channels = stack.mallocInt(1);
-
-            URL url = Texture.class.getResource(heightMapFile);
-            File file = Paths.get(url.toURI()).toFile();
-            String filePath = file.getAbsolutePath();
-            buf = stbi_load(filePath, w, h, channels, 4);
-            if (buf == null) {
-                throw new Exception("Image file [" + filePath  + "] not loaded: " + stbi_failure_reason());
-            }
-
-            width = w.get();
-            height = h.get();
-        }
-
+        this.heightArray=new  float[width][height];
         Texture texture = new Texture(textureFile);
-
-        float incX = getXLength() / (width - 1);
-        float incZ = getZLength() / (height - 1);
-
-        List<Float> positions = new ArrayList();
-        List<Float> textCoords = new ArrayList();
-        List<Integer> indices = new ArrayList();
+        float incX = getXLength()/(width-1);
+        float incZ = getZLength()/(height-1);
+        List<Float>positions=new ArrayList<>();
+        List<Float>textCoords=new ArrayList<>();
+        List<Integer>indices=new ArrayList<>();
 
         for (int row = 0; row < height; row++) {
             for (int col = 0; col < width; col++) {
                 // Create vertex for current position
                 positions.add(STARTX + col * incX); // x
-                positions.add(getHeight(col, row, width, buf)); //y
+                positions.add(getHeight(col, row, width, heightMapImage)); //y
                 positions.add(STARTZ + row * incZ); //z
 
                 // Set texture coordinates
@@ -92,8 +71,6 @@ public class HeightMapMesh {
         this.mesh = new Mesh(posArr, textCoordsArr, normalsArr, indicesArr);
         Material material = new Material(texture, 0.0f);
         mesh.setMaterial(material);
-
-        stbi_image_free(buf);
     }
 
     public Mesh getMesh() {
@@ -180,8 +157,18 @@ public class HeightMapMesh {
         return Utils.listToArray(normals);
     }
 
+    public float getHeight(int row, int column) {
+        float result = 0;
+        if (row >= 0 && row < this.heightArray.length) {
+            if (column >= 0 && column < this.heightArray[row].length) {
+                result = this.heightArray[row][column];
+            }
+        }
+        return result;
+    }
+
     private float getHeight(int x, int z, int width, ByteBuffer buffer) {
-        byte r = buffer.get(x * 4 + 0 + z * 4 * width);
+        byte r = buffer.get(x * 4 + z * 4 * width);
         byte g = buffer.get(x * 4 + 1 + z * 4 * width);
         byte b = buffer.get(x * 4 + 2 + z * 4 * width);
         byte a = buffer.get(x * 4 + 3 + z * 4 * width);
@@ -189,6 +176,5 @@ public class HeightMapMesh {
                 | ((0xFF & g) << 8) | (0xFF & b);
         return this.minY + Math.abs(this.maxY - this.minY) * ((float) argb / (float) MAX_COLOUR);
     }
-
 
 }

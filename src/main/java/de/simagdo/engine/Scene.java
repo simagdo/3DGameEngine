@@ -1,6 +1,7 @@
 package de.simagdo.engine;
 
 import de.simagdo.engine.graph.Mesh;
+import de.simagdo.engine.graph.weather.Fog;
 import de.simagdo.engine.items.GameItem;
 import de.simagdo.engine.items.SkyBox;
 
@@ -14,16 +15,18 @@ public class Scene {
     private Map<Mesh, List<GameItem>> meshMap;
     private SkyBox skyBox;
     private SceneLight sceneLight;
+    private Fog fog;
 
     public Scene() {
         this.meshMap = new HashMap<>();
+        this.fog = Fog.NOFOG;
     }
 
     public Map<Mesh, List<GameItem>> getMeshMap() {
         return meshMap;
     }
 
-    public void setMeshMap(GameItem[] gameItems) {
+    public void setGameItems(GameItem[] gameItems) {
         for (int i = 0; i < gameItems.length; i++) {
             GameItem gameItem = gameItems[i];
             Mesh mesh = gameItem.getMesh();
@@ -50,5 +53,17 @@ public class Scene {
 
     public void setSceneLight(SceneLight sceneLight) {
         this.sceneLight = sceneLight;
+    }
+
+    public void setMeshMap(Map<Mesh, List<GameItem>> meshMap) {
+        this.meshMap = meshMap;
+    }
+
+    public Fog getFog() {
+        return fog;
+    }
+
+    public void setFog(Fog fog) {
+        this.fog = fog;
     }
 }

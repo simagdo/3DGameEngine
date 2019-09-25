@@ -41,8 +41,8 @@ public class Renderer {
     private void setupSceneShader() throws Exception {
         // Create shader
         this.sceneShaderProgram = new ShaderProgram();
-        this.sceneShaderProgram.createVertexShader(Utils.loadResource("/shaders/vertex.vs"));
-        this.sceneShaderProgram.createFragmentShader(Utils.loadResource("/shaders/fragment.fs"));
+        this.sceneShaderProgram.createVertexShader(Utils.loadResource("/shaders/scene_vertex.vs"));
+        this.sceneShaderProgram.createFragmentShader(Utils.loadResource("/shaders/scene_fragment.fs"));
         this.sceneShaderProgram.link();
 
         // Create uniforms for modelView and projection matrices and text
@@ -59,6 +59,7 @@ public class Renderer {
         this.sceneShaderProgram.createDirectionalLightUniform("directionalLight");
         this.sceneShaderProgram.createSpotLightListUniform("spotLights", MAX_SPOT_LIGHTS);
         this.sceneShaderProgram.createPointLightListUniform("pointLights", MAX_POINT_LIGHTS);
+        this.sceneShaderProgram.createFogUniform("fog");
     }
 
     private void setupHudShader() throws Exception {
@@ -76,8 +77,8 @@ public class Renderer {
 
     private void setupSkyBoxShader() throws Exception {
         this.skyBoxShaderProgram = new ShaderProgram();
-        this.skyBoxShaderProgram.createVertexShader(Utils.loadResource("/shaders/skybox_vertex.vs"));
-        this.skyBoxShaderProgram.createFragmentShader(Utils.loadResource("/shaders/skybox_fragment.fs"));
+        this.skyBoxShaderProgram.createVertexShader(Utils.loadResource("/shaders/sb_vertex.vs"));
+        this.skyBoxShaderProgram.createFragmentShader(Utils.loadResource("/shaders/sb_fragment.fs"));
         this.skyBoxShaderProgram.link();
 
         this.skyBoxShaderProgram.createUniform("projectionMatrix");
@@ -122,7 +123,8 @@ public class Renderer {
         //Update Light Uniforms
         this.renderLights(viewMatrix, scene.getSceneLight());
 
-        sceneShaderProgram.setUniform("texture_sampler", 0);
+        this.sceneShaderProgram.setUniform("texture_sampler", 0);
+        this.sceneShaderProgram.setUniform("fog", scene.getFog());
 
         // Render each gameItem
         for (Mesh mesh : scene.getMeshMap().keySet()) {

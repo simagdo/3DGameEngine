@@ -3,9 +3,10 @@ package de.simagdo.game;
 import de.simagdo.engine.*;
 import de.simagdo.engine.graph.*;
 import de.simagdo.engine.graph.lights.DirectionalLight;
-import de.simagdo.engine.graph.text.Texture;
+import de.simagdo.engine.graph.weather.Fog;
 import de.simagdo.engine.items.GameItem;
 import de.simagdo.engine.items.SkyBox;
+import de.simagdo.engine.items.Terrain;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -22,55 +23,29 @@ public class DummyGame implements IGameLogic {
     private Hud hud;
     private Scene scene;
     private float lightAngle;
+    private Terrain terrain;
 
     public DummyGame() {
         renderer = new Renderer();
         this.camera = new Camera();
         this.cameraInc = new Vector3f(0.0f, 0.0f, 0.0f);
+        this.lightAngle = -90;
     }
 
     @Override
     public void init(Window window) throws Exception {
-        renderer.init(window);
+        this.renderer.init(window);
 
         this.scene = new Scene();
 
-        // Setup  GameItems
-        float reflectance = 1f;
-        Mesh mesh = OBJLoader.loadMesh("/models/cube.obj");
-        Texture texture = new Texture("/textures/grassblock.png");
-        Material material = new Material(texture, reflectance);
-        mesh.setMaterial(material);
-
-        float blockScale = 0.5f;
         float skyBoxScale = 10.0f;
-        float extension = 2.0f;
-
-        float startx = extension * (-skyBoxScale + blockScale);
-        float startz = extension * (skyBoxScale - blockScale);
-        float starty = -1.0f;
-        float inc = blockScale * 2;
-
-        float posx = startx;
-        float posz = startz;
-        float incy = 0.0f;
-        int NUM_ROWS = (int) (extension * skyBoxScale * 2 / inc);
-        int NUM_COLS = (int) (extension * skyBoxScale * 2 / inc);
-        GameItem[] gameItems = new GameItem[NUM_ROWS * NUM_COLS];
-        for (int i = 0; i < NUM_ROWS; i++) {
-            for (int j = 0; j < NUM_COLS; j++) {
-                GameItem gameItem = new GameItem(mesh);
-                gameItem.setScale(blockScale);
-                incy = Math.random() > 0.9f ? blockScale * 2 : 0f;
-                gameItem.setPosition(posx, starty + incy, posz);
-                gameItems[i * NUM_COLS + j] = gameItem;
-
-                posx += inc;
-            }
-            posx = startx;
-            posz -= inc;
-        }
-        scene.setMeshMap(gameItems);
+        float terrainScale = 10;
+        int terrainSize = 3;
+        float minY = -0.1f;
+        float maxY = 0.1f;
+        int textInc = 40;
+        this.terrain = new Terrain(terrainSize, terrainScale, minY, maxY, "/textures/terrain/heightmap.png", "/textures/terrain/terrain.png", textInc);
+        this.scene.setGameItems(terrain.getGameItems());
 
         // Setup  SkyBox
         SkyBox skyBox = new SkyBox("/models/skybox.obj", "/textures/skybox.png");
@@ -80,12 +55,16 @@ public class DummyGame implements IGameLogic {
         // Setup Lights
         setupLights();
 
+        //Setup Fog
+        this.scene.setFog(new Fog(true, new Vector3f(0.5f, 0.5f, 0.5f), 0.15f));
+
         // Create HUD
         this.hud = new Hud("DEMO");
 
-        this.camera.getPosition().x = 0.65f;
-        this.camera.getPosition().y = 1.15f;
-        this.camera.getPosition().y = 4.34f;
+        this.camera.getPosition().x = 0.00f;
+        this.camera.getPosition().y = 5.0f;
+        this.camera.getRotation().z = 0.0f;
+        this.camera.getRotation().x = 90f;
     }
 
     private void setupLights() {
@@ -134,7 +113,11 @@ public class DummyGame implements IGameLogic {
         }
 
         // Update camera position
+        Vector3f prevPosition = new Vector3f(this.camera.getPosition());
         camera.movePosition(cameraInc.x * CAMERA_POS_STEP, cameraInc.y * CAMERA_POS_STEP, cameraInc.z * CAMERA_POS_STEP);
+        //Check if there has been a Collision. If true, set the y Position to the Maximum Height
+        float height = this.terrain.getHeight(this.camera.getPosition());
+        if (camera.getPosition().y <= height) camera.setPosition(prevPosition.x, prevPosition.y, prevPosition.z);
 
         SceneLight sceneLight = scene.getSceneLight();
 
