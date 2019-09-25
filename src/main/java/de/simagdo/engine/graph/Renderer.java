@@ -125,6 +125,8 @@ public class Renderer {
 
         this.sceneShaderProgram.setUniform("texture_sampler", 0);
         this.sceneShaderProgram.setUniform("fog", scene.getFog());
+        this.sceneShaderProgram.setUniform("texture_sampler", 0);
+        this.sceneShaderProgram.setUniform("normalMap", 1);
 
         // Render each gameItem
         for (Mesh mesh : scene.getMeshMap().keySet()) {
