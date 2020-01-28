@@ -46,6 +46,7 @@ struct Material
     vec4 diffuse;
     vec4 specular;
     int hasTexture;
+    int hasNormalMap;
     float reflectance;
 };
 
@@ -57,6 +58,7 @@ struct Fog
 };
 
 uniform sampler2D texture_sampler;
+uniform sampler2D normalMap;
 uniform vec3 ambientLight;
 uniform float specularPower;
 uniform Material material;
@@ -64,7 +66,6 @@ uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
 uniform DirectionalLight directionalLight;
 uniform Fog fog;
-uniform sampler2D texture_sampler;
 
 vec4 ambientC;
 vec4 diffuseC;
@@ -161,7 +162,6 @@ vec3 calcNormal(Material material, vec3 normal, vec2 text_coord, mat4 modelViewM
         newNormal = normalize(newNormal * 2 - 1);
         newNormal = normalize(modelViewMatrix * vec4(newNormal, 0.0)).xyz;
     }
-
     return newNormal;
 }
 
@@ -169,13 +169,15 @@ void main()
 {
     setupColours(material, outTexCoord);
 
-    vec4 diffuseSpecularComp = calcDirectionalLight(directionalLight, mvVertexPos, mvVertexNormal);
+    vec3 currNomal = calcNormal(material, mvVertexNormal, outTexCoord, outModelViewMatrix);
+
+    vec4 diffuseSpecularComp = calcDirectionalLight(directionalLight, mvVertexPos, currNomal);
 
     for (int i=0; i<MAX_POINT_LIGHTS; i++)
     {
         if ( pointLights[i].intensity > 0 )
         {
-            diffuseSpecularComp += calcPointLight(pointLights[i], mvVertexPos, mvVertexNormal);
+            diffuseSpecularComp += calcPointLight(pointLights[i], mvVertexPos, currNomal);
         }
     }
 
@@ -183,11 +185,11 @@ void main()
     {
         if ( spotLights[i].pl.intensity > 0 )
         {
-            diffuseSpecularComp += calcSpotLight(spotLights[i], mvVertexPos, mvVertexNormal);
+            diffuseSpecularComp += calcSpotLight(spotLights[i], mvVertexPos, currNomal);
         }
     }
 
-    fragColor = ambientC * vec4(ambientLight, 1) + diffuseSpecularComp;
+    fragColor = clamp(ambientC * vec4(ambientLight, 1) + diffuseSpecularComp, 0, 1);
 
     if ( fog.activeFog == 1 )
     {

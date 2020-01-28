@@ -35,60 +35,72 @@ public class Window {
             throw new IllegalStateException("Unable to initialize GLFW!");
 
         glfwDefaultWindowHints();
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+        glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
+        glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
+        boolean maximized = false;
+        //If no size has been specified set it to maximized state
+        if (width == 0 || height == 0) {
+            //Set up a fixed width and height so window initialization does not fail
+            this.width = 100;
+            this.height = 100;
+            glfwWindowHint(GLFW_MAXIMIZED, GL_TRUE);
+            maximized = true;
+        }
 
         // Create the window
-        windowHandle = glfwCreateWindow(width, height, title, NULL, NULL);
-        if (windowHandle == NULL) {
+        this.windowHandle = glfwCreateWindow(this.width, this.height, this.title, NULL, NULL);
+        if (this.windowHandle == NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
 
         // Setup resize callback
-        glfwSetFramebufferSizeCallback(windowHandle, (window, width, height) -> {
+        glfwSetFramebufferSizeCallback(this.windowHandle, (window, width, height) -> {
             this.width = width;
             this.height = height;
             this.setResized(true);
         });
 
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
-        glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> {
+        glfwSetKeyCallback(this.windowHandle, (window, key, scancode, action, mods) -> {
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
                 glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
             }
         });
 
-        // Get the resolution of the primary monitor
-        GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        // Center our window
-        glfwSetWindowPos(
-                windowHandle,
-                (vidmode.width() - width) / 2,
-                (vidmode.height() - height) / 2
-        );
+        if (!maximized) {
+            // Get the resolution of the primary monitor
+            GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            // Center our window
+            glfwSetWindowPos(
+                    windowHandle,
+                    (vidmode.width() - this.width) / 2,
+                    (vidmode.height() - this.height) / 2
+            );
+        }
 
         // Make the OpenGL context current
-        glfwMakeContextCurrent(windowHandle);
+        glfwMakeContextCurrent(this.windowHandle);
 
-        if (isvSync()) {
+        if (this.isvSync()) {
             // Enable v-sync
             glfwSwapInterval(1);
         }
 
         // Make the window visible
-        glfwShowWindow(windowHandle);
+        glfwShowWindow(this.windowHandle);
 
         createCapabilities();
 
         // Set the clear color
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-
         glEnable(GL_DEPTH_TEST);
 
+        //Support for Transparencies
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -142,7 +154,7 @@ public class Window {
     }
 
     public void update() {
-        glfwSwapBuffers(windowHandle);
+        glfwSwapBuffers(this.windowHandle);
         glfwPollEvents();
     }
 

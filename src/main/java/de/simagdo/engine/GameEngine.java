@@ -51,53 +51,53 @@ public class GameEngine implements Runnable {
         float accumulator = 0f;
         float interval = 1f / TARGET_UPS;
 
-        boolean running = true;
-        while (running && !window.windowShouldClose()) {
+        while (!window.windowShouldClose()) {
             elapsedTime = timer.getElapsedTime();
             accumulator += elapsedTime;
 
-            input();
+            this.input();
 
             while (accumulator >= interval) {
-                update(interval);
+                this.update(interval);
                 accumulator -= interval;
             }
 
-            render();
+            this.render();
 
             if (!window.isvSync()) {
-                sync();
+                this.sync();
             }
         }
     }
 
     private void sync() {
         float loopSlot = 1f / TARGET_FPS;
-        double endTime = timer.getLastLoopTime() + loopSlot;
-        while (timer.getTime() < endTime) {
+        double endTime = this.timer.getLastLoopTime() + loopSlot;
+        while (this.timer.getTime() < endTime) {
             try {
                 Thread.sleep(1);
-            } catch (InterruptedException ie) {
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
 
     protected void input() {
-        mouseInput.input(this.window);
+        this.mouseInput.input(this.window);
         this.gameLogic.input(this.window, this.mouseInput);
     }
 
     protected void update(float interval) {
-        gameLogic.update(interval, this.mouseInput);
+        this.gameLogic.update(interval, this.mouseInput);
     }
 
     protected void render() {
-        gameLogic.render(window);
-        window.update();
+        this.gameLogic.render(this.window);
+        this.window.update();
     }
 
     protected void cleanup() {
-        gameLogic.cleanup();
+        this.gameLogic.cleanup();
     }
 
 }
