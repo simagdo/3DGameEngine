@@ -30,12 +30,12 @@ public class GameEngine implements Runnable {
     @Override
     public void run() {
         try {
-            init();
-            gameLoop();
+            this.init();
+            this.gameLoop();
         } catch (Exception excp) {
             excp.printStackTrace();
         } finally {
-            cleanup();
+            this.cleanup();
         }
     }
 
@@ -63,7 +63,7 @@ public class GameEngine implements Runnable {
                 accumulator -= interval;
             }
 
-            render();
+            this.render();
 
             if (!window.isvSync()) {
                 sync();
@@ -88,16 +88,16 @@ public class GameEngine implements Runnable {
     }
 
     protected void update(float interval) {
-        gameLogic.update(interval, this.mouseInput);
+        this.gameLogic.update(interval, this.mouseInput);
     }
 
     protected void render() {
-        gameLogic.render(window);
-        window.update();
+        this.gameLogic.render(this.window);
+        this.window.update();
     }
 
     protected void cleanup() {
-        gameLogic.cleanup();
+        this.gameLogic.cleanup();
     }
 
 }

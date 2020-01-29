@@ -73,7 +73,7 @@ public class Terrain {
                 terrainBlock.setScale(scale);
                 terrainBlock.setPosition(xDisplacement, 0, zDisplacement);
                 this.gameItems[row * terrainSize + col] = terrainBlock;
-                this.boundingBoxes[row][col] = getBoundingBox(terrainBlock);
+                this.boundingBoxes[row][col] = this.getBoundingBox(terrainBlock);
             }
         }
 

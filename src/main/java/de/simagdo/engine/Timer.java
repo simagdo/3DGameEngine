@@ -5,7 +5,7 @@ public class Timer {
     private double lastLoopTime;
 
     public void init() {
-        lastLoopTime = getTime();
+        this.lastLoopTime = this.getTime();
     }
 
     public double getTime() {
@@ -13,13 +13,13 @@ public class Timer {
     }
 
     public float getElapsedTime() {
-        double time = getTime();
-        float elapsedTime = (float) (time - lastLoopTime);
-        lastLoopTime = time;
+        double time = this.getTime();
+        float elapsedTime = (float) (time - this.lastLoopTime);
+        this.lastLoopTime = time;
         return elapsedTime;
     }
 
     public double getLastLoopTime() {
-        return lastLoopTime;
+        return this.lastLoopTime;
     }
 }

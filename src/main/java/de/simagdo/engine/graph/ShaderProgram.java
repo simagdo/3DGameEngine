@@ -52,6 +52,7 @@ public class ShaderProgram {
         this.createUniform(uniformName + ".diffuse");
         this.createUniform(uniformName + ".specular");
         this.createUniform(uniformName + ".hasTexture");
+        this.createUniform(uniformName + ".hasNormalMap");
         this.createUniform(uniformName + ".reflectance");
     }
 
@@ -95,6 +96,7 @@ public class ShaderProgram {
         this.setUniform(uniformName + ".diffuse", material.getDiffuseColour());
         this.setUniform(uniformName + ".specular", material.getSpecularColour());
         this.setUniform(uniformName + ".hasTexture", material.isTextured() ? 1 : 0);
+        this.setUniform(uniformName + ".hasNormalMap", material.hasNormalMap() ? 1 : 0);
         this.setUniform(uniformName + ".reflectance", material.getReflectance());
     }
 

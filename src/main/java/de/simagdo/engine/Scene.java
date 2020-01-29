@@ -27,14 +27,9 @@ public class Scene {
     }
 
     public void setGameItems(GameItem[] gameItems) {
-        for (int i = 0; i < gameItems.length; i++) {
-            GameItem gameItem = gameItems[i];
+        for (GameItem gameItem : gameItems) {
             Mesh mesh = gameItem.getMesh();
-            List<GameItem> list = this.meshMap.get(mesh);
-            if (list == null) {
-                list = new ArrayList<>();
-                this.meshMap.put(mesh, list);
-            }
+            List<GameItem> list = this.meshMap.computeIfAbsent(mesh, k -> new ArrayList<>());
             list.add(gameItem);
         }
     }

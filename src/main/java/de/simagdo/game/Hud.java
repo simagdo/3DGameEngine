@@ -14,9 +14,6 @@ import java.awt.*;
 
 public class Hud implements IHud {
 
-    private static final int FONT_COLS = 16;
-    private static final int FONT_ROWS = 16;
-    private static final String FONT_TEXTURE = "/textures/font_texture.png";
     private final GameItem[] gameItems;
     private final TextItem statusTextItem;
     private final GameItem compassItem;
@@ -32,11 +29,11 @@ public class Hud implements IHud {
         Material material = new Material();
         material.setAmbientColour(new Vector4f(1, 0, 0, 1));
         mesh.setMaterial(material);
-        compassItem = new GameItem(mesh);
-        compassItem.setScale(40.0f);
-        compassItem.setPosition(100f, 100f, 0f);
+        this.compassItem = new GameItem(mesh);
+        this.compassItem.setScale(40.0f);
+        this.compassItem.setPosition(0, 0, 180f);
 
-        gameItems = new GameItem[]{this.statusTextItem, this.compassItem};
+        this.gameItems = new GameItem[]{this.statusTextItem, this.compassItem};
     }
 
     public void setStatusText(String statusText) {
@@ -54,6 +51,7 @@ public class Hud implements IHud {
 
     public void updateSize(Window window) {
         this.statusTextItem.setPosition(10f, window.getHeight() - 50f, 0);
+        this.compassItem.setPosition(window.getWidth() - 40f, 50f, 0);
     }
 
 }
