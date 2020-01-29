@@ -97,7 +97,7 @@ public class Renderer {
         this.clear();
 
         if (window.isResized()) {
-            glViewport(0, 0, window.getWidth(), window.getHeight());
+            GL11.glViewport(0, 0, window.getWidth(), window.getHeight());
             window.setResized(false);
         }
 
