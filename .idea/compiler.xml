@@ -9,8 +9,8 @@
         <module name="3DGameEngine" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="3DGameEngine" target="8" />
+    <bytecodeTargetLevel target="13">
+      <module name="3DGameEngine" target="13" />
     </bytecodeTargetLevel>
   </component>
 </project>

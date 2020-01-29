@@ -224,7 +224,7 @@ public class ShaderProgram {
     }
 
     public void cleanup() {
-        unbind();
+        this.unbind();
         if (this.programId != 0) {
             glDeleteProgram(this.programId);
         }
