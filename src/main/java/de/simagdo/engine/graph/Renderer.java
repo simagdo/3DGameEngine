@@ -57,9 +57,9 @@ public class Renderer {
         // Create lighting related uniforms
         this.sceneShaderProgram.createUniform("specularPower");
         this.sceneShaderProgram.createUniform("ambientLight");
-        this.sceneShaderProgram.createDirectionalLightUniform("directionalLight");
-        this.sceneShaderProgram.createSpotLightListUniform("spotLights", MAX_SPOT_LIGHTS);
         this.sceneShaderProgram.createPointLightListUniform("pointLights", MAX_POINT_LIGHTS);
+        this.sceneShaderProgram.createSpotLightListUniform("spotLights", MAX_SPOT_LIGHTS);
+        this.sceneShaderProgram.createDirectionalLightUniform("directionalLight");
         this.sceneShaderProgram.createFogUniform("fog");
     }
 
@@ -73,7 +73,6 @@ public class Renderer {
         this.hudShaderProgram.createUniform("projModelMatrix");
         this.hudShaderProgram.createUniform("colour");
         this.hudShaderProgram.createUniform("hasTexture");
-
     }
 
     private void setupSkyBoxShader() throws Exception {
@@ -86,7 +85,6 @@ public class Renderer {
         this.skyBoxShaderProgram.createUniform("modelViewMatrix");
         this.skyBoxShaderProgram.createUniform("texture_sampler");
         this.skyBoxShaderProgram.createUniform("ambientLight");
-
     }
 
     public void clear() {
@@ -100,6 +98,10 @@ public class Renderer {
             GL11.glViewport(0, 0, window.getWidth(), window.getHeight());
             window.setResized(false);
         }
+
+        //Update Projection and View Atrices once per render cycle
+        this.transformation.updateProjectionMatrix(FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
+        this.transformation.updateViewMatrix(camera);
 
         //Render Scene
         this.renderScene(window, camera, scene);
@@ -115,11 +117,11 @@ public class Renderer {
         this.sceneShaderProgram.bind();
 
         //Update Projection Matrix
-        Matrix4f projectionMatrix = transformation.updateProjectionMatrix(FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
+        Matrix4f projectionMatrix = this.transformation.getProjectionMatrix();
         this.sceneShaderProgram.setUniform("projectionMatrix", projectionMatrix);
 
         // Update view Matrix
-        Matrix4f viewMatrix = transformation.updateViewMatrix(camera);
+        Matrix4f viewMatrix = transformation.getViewMatrix();
 
         //Update Light Uniforms
         this.renderLights(viewMatrix, scene.getSceneLight());
@@ -220,9 +222,10 @@ public class Renderer {
             this.skyBoxShaderProgram.setUniform("texture_sampler", 0);
 
             //Update projection Matrix
-            Matrix4f projectionMatrix = this.transformation.updateProjectionMatrix(FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
-            this.skyBoxShaderProgram.setUniform("projectionMatrix", projectionMatrix);
-            Matrix4f viewMatrix = this.transformation.updateViewMatrix(camera);
+            Matrix4f projectionMatrix = this.transformation.getProjectionMatrix();
+            this.sceneShaderProgram.setUniform("projectionMatrix", projectionMatrix);
+
+            Matrix4f viewMatrix = this.transformation.getViewMatrix();
             viewMatrix.m30(0);
             viewMatrix.m31(0);
             viewMatrix.m32(0);

@@ -10,7 +10,7 @@ public class MainComponent {
         try {
             boolean vSync = true;
             IGameLogic gameLogic = new DummyGame();
-            GameEngine engine = new GameEngine("Game", 600, 480, vSync, gameLogic);
+            GameEngine engine = new GameEngine("Game", 800, 600, vSync, gameLogic);
             engine.start();
         } catch (Exception e) {
             e.printStackTrace();

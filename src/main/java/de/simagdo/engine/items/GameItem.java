@@ -22,11 +22,11 @@ public class GameItem {
     }
 
     public Mesh getMesh() {
-        return mesh;
+        return this.mesh;
     }
 
     public Vector3f getPosition() {
-        return position;
+        return this.position;
     }
 
     public void setPosition(float x, float y, float z) {
@@ -36,7 +36,7 @@ public class GameItem {
     }
 
     public float getScale() {
-        return scale;
+        return this.scale;
     }
 
     public void setScale(float scale) {
@@ -44,7 +44,7 @@ public class GameItem {
     }
 
     public Vector3f getRotation() {
-        return rotation;
+        return this.rotation;
     }
 
     public void setRotation(float x, float y, float z) {

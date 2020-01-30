@@ -10,6 +10,10 @@ public class GameEngine implements Runnable {
     private final IGameLogic gameLogic;
     private final MouseInput mouseInput;
 
+    public GameEngine(String windowTitle, boolean vSync, IGameLogic gameLogic) throws Exception {
+        this(windowTitle, 0, 0, vSync, gameLogic);
+    }
+
     public GameEngine(String windowTitle, int width, int height, boolean vSync, IGameLogic gameLogic) throws Exception {
         this.gameLoopThread = new Thread(this, "GAME_LOOP_THREAD");
         this.window = new Window(windowTitle, width, height, vSync);
