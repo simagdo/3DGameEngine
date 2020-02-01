@@ -6,7 +6,7 @@ public interface IHud {
 
     GameItem[] getGameItems();
 
-    default void cleanup(){
+    default void cleanUp(){
         for (GameItem gameItem : this.getGameItems()){
             gameItem.getMesh().cleanUp();
         }

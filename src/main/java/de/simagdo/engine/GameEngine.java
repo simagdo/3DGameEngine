@@ -39,7 +39,7 @@ public class GameEngine implements Runnable {
         } catch (Exception excp) {
             excp.printStackTrace();
         } finally {
-            this.cleanup();
+            this.cleanUp();
         }
     }
 
@@ -100,8 +100,8 @@ public class GameEngine implements Runnable {
         this.window.update();
     }
 
-    protected void cleanup() {
-        this.gameLogic.cleanup();
+    protected void cleanUp() {
+        this.gameLogic.cleanUp();
     }
 
 }

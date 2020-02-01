@@ -169,7 +169,7 @@ public class Mesh {
         // Delete the text
         Texture texture = material.getTexture();
         if (texture != null) {
-            texture.cleanup();
+            texture.cleanUp();
         }
 
         // Delete the VAO

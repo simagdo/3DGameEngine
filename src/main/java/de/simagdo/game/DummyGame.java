@@ -4,12 +4,11 @@ import de.simagdo.engine.*;
 import de.simagdo.engine.graph.*;
 import de.simagdo.engine.graph.lights.DirectionalLight;
 import de.simagdo.engine.graph.text.Texture;
-import de.simagdo.engine.graph.weather.Fog;
 import de.simagdo.engine.items.GameItem;
-import de.simagdo.engine.items.SkyBox;
 import de.simagdo.engine.items.Terrain;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -24,13 +23,16 @@ public class DummyGame implements IGameLogic {
     private Hud hud;
     private Scene scene;
     private float lightAngle;
+    private float angleInc;
     private Terrain terrain;
+    private GameItem cubeGameItem;
 
     public DummyGame() {
         this.renderer = new Renderer();
         this.camera = new Camera();
         this.cameraInc = new Vector3f(0.0f, 0.0f, 0.0f);
-        this.lightAngle = -35;
+        this.angleInc = 0;
+        this.lightAngle = 45;
     }
 
     @Override
@@ -40,34 +42,28 @@ public class DummyGame implements IGameLogic {
         this.scene = new Scene();
 
         // Setup  GameItems
-        float reflectance = 0.65f;
-        Texture normalMap = new Texture("/textures/rock_normals.png");
+        float reflectance = 1f;
+        Mesh cubeMesh = OBJLoader.loadMesh("/models/cube.obj");
+        Material cubeMaterial = new Material(new Vector4f(0, 1, 0, 1), reflectance);
+        cubeMesh.setMaterial(cubeMaterial);
+        this.cubeGameItem = new GameItem(cubeMesh);
+        this.cubeGameItem.setPosition(0, 0, 0);
+        this.cubeGameItem.setScale(0.5f);
 
-        Mesh quadMesh1 = OBJLoader.loadMesh("/models/quad.obj");
-        Texture texture = new Texture("/textures/rock.png");
-        Material quadMaterial1 = new Material(texture, reflectance);
-        quadMesh1.setMaterial(quadMaterial1);
-        GameItem quadGameItem1 = new GameItem(quadMesh1);
-        quadGameItem1.setPosition(-3f, 0, 0);
-        quadGameItem1.setScale(2.0f);
-        quadGameItem1.setRotation(90, 0, 0);
+        Mesh quadMesh = OBJLoader.loadMesh("/models/plane.obj");
+        Material quadMaterial = new Material(new Vector4f(0.0f, 0.0f, 1.0f, 10.0f), reflectance);
+        quadMesh.setMaterial(quadMaterial);
+        GameItem quadGameItem = new GameItem(quadMesh);
+        quadGameItem.setPosition(0, -1, 0);
+        quadGameItem.setScale(2.5f);
 
-        Mesh quadMesh2 = OBJLoader.loadMesh("/models/quad.obj");
-        Material quadMaterial2 = new Material(texture, reflectance);
-        quadMaterial2.setNormalMap(normalMap);
-        quadMesh2.setMaterial(quadMaterial2);
-        GameItem quadGameItem2 = new GameItem(quadMesh2);
-        quadGameItem2.setPosition(3f, 0, 0);
-        quadGameItem2.setScale(2.0f);
-        quadGameItem2.setRotation(90, 0, 0);
+        this.scene.setGameItems(new GameItem[]{this.cubeGameItem, quadGameItem});
 
-        this.scene.setGameItems(new GameItem[]{quadGameItem1, quadGameItem2});
-
-        // Setup Lights
         this.setupLights();
 
-        this.camera.getPosition().y = 5.0f;
-        this.camera.getRotation().x = 90;
+        this.camera.getPosition().z = 2;
+        this.hud = new Hud("LightAngle:");
+
     }
 
     private void setupLights() {
@@ -80,13 +76,16 @@ public class DummyGame implements IGameLogic {
 
         //Directional Light
         float lightIntensity = 1.0f;
-        Vector3f lightPosition = new Vector3f(1, 1, 0);
-        sceneLight.setDirectionalLight(new DirectionalLight(new Vector3f(1, 1, 1), lightPosition, lightIntensity));
+        Vector3f lightPosition = new Vector3f(0, 1, 1);
+        DirectionalLight directionalLight = new DirectionalLight(new Vector3f(1, 1, 1), lightPosition, lightIntensity);
+        directionalLight.setShadowPosMult(5);
+        directionalLight.setOrthoCoords(-10.0f, 10.0f, -10.0f, 10.0f, -1.0f, 20.0f);
+        sceneLight.setDirectionalLight(directionalLight);
     }
 
     @Override
     public void input(Window window, MouseInput mouseInput) {
-        cameraInc.set(0, 0, 0);
+        this.cameraInc.set(0, 0, 0);
         if (window.isKeyPressed(GLFW_KEY_W)) {
             cameraInc.z = -1;
         } else if (window.isKeyPressed(GLFW_KEY_S)) {
@@ -103,15 +102,11 @@ public class DummyGame implements IGameLogic {
             cameraInc.y = 1;
         }
         if (window.isKeyPressed(GLFW_KEY_LEFT)) {
-            this.lightAngle -= 2.5f;
-            if (this.lightAngle < -90) {
-                this.lightAngle = -90;
-            }
+            this.angleInc -= 0.05f;
         } else if (window.isKeyPressed(GLFW_KEY_RIGHT)) {
-            this.lightAngle += 2.5f;
-            if (this.lightAngle > 90) {
-                this.lightAngle = 90;
-            }
+            this.angleInc += 0.05f;
+        } else {
+            this.angleInc = 0;
         }
 
     }
@@ -134,12 +129,24 @@ public class DummyGame implements IGameLogic {
             this.camera.setPosition(prevPos.x, prevPos.y, prevPos.z);
         }
 
-        // Update directional light direction, intensity and colour
-        SceneLight sceneLight = this.scene.getSceneLight();
-        DirectionalLight directionalLight = sceneLight.getDirectionalLight();
-        double angRad = Math.toRadians(this.lightAngle);
-        directionalLight.getDirection().x = (float) Math.sin(angRad);
-        directionalLight.getDirection().y = (float) Math.cos(angRad);
+        float rotY = this.cubeGameItem.getRotation().y;
+        rotY += 0.5f;
+        if (rotY >= 360) rotY -= 360;
+
+        this.cubeGameItem.getRotation().y = rotY;
+
+        this.lightAngle += this.angleInc;
+        if (this.lightAngle < 0) this.lightAngle = 0;
+        else if (this.lightAngle > 180) this.lightAngle = 180;
+
+        float zValue = (float) Math.cos(Math.toRadians(this.lightAngle));
+        float yValue = (float) Math.sin(Math.toRadians(this.lightAngle));
+        Vector3f lightDirection = this.scene.getSceneLight().getDirectionalLight().getDirection();
+        lightDirection.x = 0;
+        lightDirection.y = yValue;
+        lightDirection.z = zValue;
+        float lightAngle = (float) Math.toDegrees(Math.acos(lightDirection.z));
+        hud.setStatusText("LightAngle: " + lightAngle);
     }
 
     @Override
@@ -150,11 +157,11 @@ public class DummyGame implements IGameLogic {
     }
 
     @Override
-    public void cleanup() {
+    public void cleanUp() {
         renderer.cleanUp();
         for (Mesh mesh : scene.getMeshMap().keySet()) mesh.cleanUp();
         if (this.hud != null)
-            this.hud.cleanup();
+            this.hud.cleanUp();
     }
 
 }
