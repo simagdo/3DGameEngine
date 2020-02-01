@@ -20,6 +20,7 @@ public class ShaderProgram {
     private final int programId;
     private int vertexShaderId;
     private int fragmentShaderId;
+    private int geometryShaderId;
     private final Map<String, Integer> uniforms;
 
     public ShaderProgram() throws Exception {
@@ -202,11 +203,14 @@ public class ShaderProgram {
             throw new Exception("Error linking Shader code: " + glGetProgramInfoLog(this.programId, 1024));
         }
 
-        if (vertexShaderId != 0) {
-            glDetachShader(this.programId, vertexShaderId);
+        if (this.vertexShaderId != 0) {
+            glDetachShader(this.programId, this.vertexShaderId);
         }
-        if (fragmentShaderId != 0) {
-            glDetachShader(this.programId, fragmentShaderId);
+        if (this.geometryShaderId != 0) {
+            glDetachShader(this.programId, this.geometryShaderId);
+        }
+        if (this.fragmentShaderId != 0) {
+            glDetachShader(this.programId, this.fragmentShaderId);
         }
 
         glValidateProgram(this.programId);

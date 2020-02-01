@@ -1,5 +1,6 @@
 package de.simagdo.engine;
 
+import de.simagdo.engine.window.Window;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 

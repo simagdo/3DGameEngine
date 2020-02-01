@@ -4,10 +4,7 @@ import de.simagdo.engine.items.GameItem;
 import de.simagdo.engine.IHud;
 import de.simagdo.engine.graph.text.FontTexture;
 import de.simagdo.engine.graph.text.TextItem;
-import de.simagdo.engine.Window;
-import de.simagdo.engine.graph.Material;
-import de.simagdo.engine.graph.Mesh;
-import de.simagdo.engine.graph.OBJLoader;
+import de.simagdo.engine.window.Window;
 import org.joml.Vector4f;
 
 import java.awt.*;

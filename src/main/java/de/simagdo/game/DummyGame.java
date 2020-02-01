@@ -3,9 +3,13 @@ package de.simagdo.game;
 import de.simagdo.engine.*;
 import de.simagdo.engine.graph.*;
 import de.simagdo.engine.graph.lights.DirectionalLight;
-import de.simagdo.engine.graph.text.Texture;
 import de.simagdo.engine.items.GameItem;
 import de.simagdo.engine.items.Terrain;
+import de.simagdo.engine.loaders.md5.MD5Loader;
+import de.simagdo.engine.loaders.md5.MD5Model;
+import de.simagdo.engine.loaders.obj.OBJLoader;
+import de.simagdo.engine.window.Window;
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -25,7 +29,6 @@ public class DummyGame implements IGameLogic {
     private float lightAngle;
     private float angleInc;
     private Terrain terrain;
-    private GameItem cubeGameItem;
 
     public DummyGame() {
         this.renderer = new Renderer();
@@ -41,28 +44,33 @@ public class DummyGame implements IGameLogic {
 
         this.scene = new Scene();
 
-        // Setup  GameItems
         float reflectance = 1f;
-        Mesh cubeMesh = OBJLoader.loadMesh("/models/cube.obj");
-        Material cubeMaterial = new Material(new Vector4f(0, 1, 0, 1), reflectance);
-        cubeMesh.setMaterial(cubeMaterial);
-        this.cubeGameItem = new GameItem(cubeMesh);
-        this.cubeGameItem.setPosition(0, 0, 0);
-        this.cubeGameItem.setScale(0.5f);
 
         Mesh quadMesh = OBJLoader.loadMesh("/models/plane.obj");
-        Material quadMaterial = new Material(new Vector4f(0.0f, 0.0f, 1.0f, 10.0f), reflectance);
+        Material quadMaterial = new Material(new Vector4f(0.0f, 0.0f, 1.0f, 1.0f), reflectance);
         quadMesh.setMaterial(quadMaterial);
         GameItem quadGameItem = new GameItem(quadMesh);
-        quadGameItem.setPosition(0, -1, 0);
+        quadGameItem.setPosition(0, 0, 0);
         quadGameItem.setScale(2.5f);
 
-        this.scene.setGameItems(new GameItem[]{this.cubeGameItem, quadGameItem});
+        //Setup GameItems
+        MD5Model md5MeshModel1 = MD5Model.parse("/models/monster.md5mesh");
+        GameItem monster = MD5Loader.process(md5MeshModel1, new Vector4f(1, 1, 1, 1));
+        monster.setScale(0.05f);
+        monster.setPosition(90, 0, 0);
 
+        this.scene.setGameItems(new GameItem[]{quadGameItem, monster});
+
+        //Setup Lights
         this.setupLights();
 
-        this.camera.getPosition().z = 2;
-        this.hud = new Hud("LightAngle:");
+        this.camera.getPosition().x = 0.25f;
+        this.camera.getPosition().y = 6.5f;
+        this.camera.getPosition().z = 6.5f;
+        this.camera.getRotation().x = 25;
+        this.camera.getRotation().y = -1;
+
+        this.hud = new Hud("");
 
     }
 
@@ -129,12 +137,6 @@ public class DummyGame implements IGameLogic {
             this.camera.setPosition(prevPos.x, prevPos.y, prevPos.z);
         }
 
-        float rotY = this.cubeGameItem.getRotation().y;
-        rotY += 0.5f;
-        if (rotY >= 360) rotY -= 360;
-
-        this.cubeGameItem.getRotation().y = rotY;
-
         this.lightAngle += this.angleInc;
         if (this.lightAngle < 0) this.lightAngle = 0;
         else if (this.lightAngle > 180) this.lightAngle = 180;
@@ -145,8 +147,6 @@ public class DummyGame implements IGameLogic {
         lightDirection.x = 0;
         lightDirection.y = yValue;
         lightDirection.z = zValue;
-        float lightAngle = (float) Math.toDegrees(Math.acos(lightDirection.z));
-        hud.setStatusText("LightAngle: " + lightAngle);
     }
 
     @Override

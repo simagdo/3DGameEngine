@@ -1,5 +1,8 @@
 package de.simagdo.engine;
 
+import de.simagdo.engine.window.Window;
+import de.simagdo.engine.window.WindowOptions;
+
 public class GameEngine implements Runnable {
 
     public static final int TARGET_FPS = 75;
@@ -10,13 +13,13 @@ public class GameEngine implements Runnable {
     private final IGameLogic gameLogic;
     private final MouseInput mouseInput;
 
-    public GameEngine(String windowTitle, boolean vSync, IGameLogic gameLogic) throws Exception {
-        this(windowTitle, 0, 0, vSync, gameLogic);
+    public GameEngine(String windowTitle, boolean vSync, WindowOptions windowOptions, IGameLogic gameLogic) throws Exception {
+        this(windowTitle, 0, 0, vSync, windowOptions, gameLogic);
     }
 
-    public GameEngine(String windowTitle, int width, int height, boolean vSync, IGameLogic gameLogic) throws Exception {
+    public GameEngine(String windowTitle, int width, int height, boolean vSync, WindowOptions windowOptions, IGameLogic gameLogic) throws Exception {
         this.gameLoopThread = new Thread(this, "GAME_LOOP_THREAD");
-        this.window = new Window(windowTitle, width, height, vSync);
+        this.window = new Window(windowTitle, width, height, vSync, windowOptions);
         this.gameLogic = gameLogic;
         timer = new Timer();
         this.mouseInput = new MouseInput();

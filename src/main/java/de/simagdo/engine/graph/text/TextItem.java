@@ -19,7 +19,7 @@ public class TextItem extends GameItem {
         super();
         this.text = text;
         this.fontTexture = fontTexture;
-        this.setMesh(this.buildMesh());
+        this.setMeshes(this.buildMesh());
     }
 
     private Mesh buildMesh() {
@@ -90,7 +90,7 @@ public class TextItem extends GameItem {
     public void setText(String text) {
         this.text = text;
         this.getMesh().deleteBuffers();
-        this.setMesh(this.buildMesh());
+        this.setMeshes(this.buildMesh());
     }
 
 }

@@ -7,13 +7,12 @@ import de.simagdo.engine.graph.lights.PointLight;
 import de.simagdo.engine.graph.lights.SpotLight;
 import de.simagdo.engine.items.GameItem;
 import de.simagdo.engine.items.SkyBox;
+import de.simagdo.engine.window.Window;
 import de.simagdo.utils.Utils;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
-import org.lwjgl.opengl.GL30;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE2;

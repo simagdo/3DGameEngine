@@ -1,4 +1,4 @@
-package de.simagdo.engine;
+package de.simagdo.engine.window;
 
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -17,13 +17,15 @@ public class Window {
     private long windowHandle;
     private boolean resized;
     private boolean vSync;
+    private WindowOptions windowOptions;
 
-    public Window(String title, int width, int height, boolean vSync) {
+    public Window(String title, int width, int height, boolean vSync, WindowOptions windowOptions) {
         this.title = title;
         this.width = width;
         this.height = height;
         this.resized = false;
         this.vSync = vSync;
+        this.windowOptions = windowOptions;
     }
 
     public void init() {
@@ -99,13 +101,18 @@ public class Window {
         // Set the clear color
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glEnable(GL_DEPTH_TEST);
+        if (this.windowOptions.showTriangles) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
 
         //Support for Transparencies
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
+        if (this.windowOptions.cullFace) {
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK);
+        }
 
     }
 

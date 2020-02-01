@@ -1,6 +1,6 @@
 package de.simagdo.engine;
 
-import de.simagdo.engine.graph.Mesh;
+import de.simagdo.engine.window.Window;
 
 public interface IGameLogic {
 

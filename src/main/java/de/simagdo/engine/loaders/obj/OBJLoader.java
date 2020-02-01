@@ -1,5 +1,6 @@
-package de.simagdo.engine.graph;
+package de.simagdo.engine.loaders.obj;
 
+import de.simagdo.engine.graph.Mesh;
 import de.simagdo.utils.Utils;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
