@@ -37,11 +37,11 @@ public class MD5Loader {
         List<Float> textCoords = new ArrayList<>();
         List<Integer> indices = new ArrayList<>();
 
-        List<MD5Mesh.MD5Vertex> vertices = md5Mesh.getVertices();
-        List<MD5Mesh.MD5Weight> weights = md5Mesh.getWeights();
-        List<MD5JointInfo.MD5JointData> joints = md5Model.getJointInfo().getJoints();
+        List<MD5Vertex> vertices = md5Mesh.getVertices();
+        List<MD5Weight> weights = md5Mesh.getWeights();
+        List<MD5JointData> joints = md5Model.getJointInfo().getJoints();
 
-        for (MD5Mesh.MD5Vertex vertex : vertices) {
+        for (MD5Vertex vertex : vertices) {
             Vector3f vertexPos = new Vector3f();
             Vector2f vertexTextCoords = vertex.getTextCoords();
             textCoords.add(vertexTextCoords.x);
@@ -51,8 +51,8 @@ public class MD5Loader {
             int numWeights = vertex.getWeightCount();
 
             for (int i = startWeight; i < startWeight + numWeights; i++) {
-                MD5Mesh.MD5Weight weight = weights.get(i);
-                MD5JointInfo.MD5JointData joint = joints.get(weight.getJointIndex());
+                MD5Weight weight = weights.get(i);
+                MD5JointData joint = joints.get(weight.getJointIndex());
                 Vector3f rotatedPos = new Vector3f(weight.getPosition()).rotate(joint.getOrientation());
                 Vector3f acumPos = new Vector3f(joint.getPosition()).add(rotatedPos);
                 acumPos.mul(weight.getBias());
@@ -62,7 +62,7 @@ public class MD5Loader {
             vertexInfoList.add(new VertexInfo(vertexPos));
         }
 
-        for (MD5Mesh.MD5Triangle tri : md5Mesh.getTriangles()) {
+        for (MD5Triangle tri : md5Mesh.getTriangles()) {
             indices.add(tri.getVertex0());
             indices.add(tri.getVertex1());
             indices.add(tri.getVertex2());

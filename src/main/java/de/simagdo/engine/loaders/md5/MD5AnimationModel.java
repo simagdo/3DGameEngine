@@ -5,24 +5,20 @@ import de.simagdo.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MD5AnimModel {
+public class MD5AnimationModel {
 
     private MD5AnimHeader header;
-
     private MD5Hierarchy hierarchy;
-
     private MD5BoundInfo boundInfo;
-
     private MD5BaseFrame baseFrame;
-
     private List<MD5Frame> frames;
 
-    public MD5AnimModel() {
-        frames = new ArrayList<>();
+    public MD5AnimationModel() {
+        this.frames = new ArrayList<>();
     }
 
     public MD5AnimHeader getHeader() {
-        return header;
+        return this.header;
     }
 
     public void setHeader(MD5AnimHeader header) {
@@ -30,7 +26,7 @@ public class MD5AnimModel {
     }
 
     public MD5Hierarchy getHierarchy() {
-        return hierarchy;
+        return this.hierarchy;
     }
 
     public void setHierarchy(MD5Hierarchy hierarchy) {
@@ -38,7 +34,7 @@ public class MD5AnimModel {
     }
 
     public MD5BoundInfo getBoundInfo() {
-        return boundInfo;
+        return this.boundInfo;
     }
 
     public void setBoundInfo(MD5BoundInfo boundInfo) {
@@ -46,7 +42,7 @@ public class MD5AnimModel {
     }
 
     public MD5BaseFrame getBaseFrame() {
-        return baseFrame;
+        return this.baseFrame;
     }
 
     public void setBaseFrame(MD5BaseFrame baseFrame) {
@@ -54,33 +50,19 @@ public class MD5AnimModel {
     }
 
     public List<MD5Frame> getFrames() {
-        return frames;
+        return this.frames;
     }
 
     public void setFrames(List<MD5Frame> frames) {
         this.frames = frames;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder str = new StringBuilder("MD5AnimModel: " + System.lineSeparator());
-        str.append(getHeader()).append(System.lineSeparator());
-        str.append(getHierarchy()).append(System.lineSeparator());
-        str.append(getBoundInfo()).append(System.lineSeparator());
-        str.append(getBaseFrame()).append(System.lineSeparator());
-
-        for (MD5Frame frame : frames) {
-            str.append(frame).append(System.lineSeparator());
-        }
-        return str.toString();
-    }
-
-    public static MD5AnimModel parse(String animFile) throws Exception {
+    public static MD5AnimationModel parse(String animFile) throws Exception {
         List<String> lines = Utils.readAllLines(animFile);
 
-        MD5AnimModel result = new MD5AnimModel();
+        MD5AnimationModel result = new MD5AnimationModel();
 
-        int numLines = lines != null ? lines.size() : 0;
+        int numLines = lines.size();
         if (numLines == 0) {
             throw new Exception("Cannot parse empty file");
         }
@@ -120,7 +102,7 @@ public class MD5AnimModel {
         return result;
     }
 
-    private static void parseBlock(MD5AnimModel model, String blockId, List<String> blockBody) throws Exception {
+    private static void parseBlock(MD5AnimationModel model, String blockId, List<String> blockBody) throws Exception {
         switch (blockId) {
             case "hierarchy":
                 MD5Hierarchy hierarchy = MD5Hierarchy.parse(blockBody);
@@ -141,5 +123,19 @@ public class MD5AnimModel {
                 }
                 break;
         }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder("MD5AnimationModel: " + System.lineSeparator());
+        str.append(getHeader()).append(System.lineSeparator());
+        str.append(getHierarchy()).append(System.lineSeparator());
+        str.append(getBoundInfo()).append(System.lineSeparator());
+        str.append(getBaseFrame()).append(System.lineSeparator());
+
+        for (MD5Frame frame : frames) {
+            str.append(frame).append(System.lineSeparator());
+        }
+        return str.toString();
     }
 }
