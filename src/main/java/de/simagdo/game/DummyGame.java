@@ -57,7 +57,7 @@ public class DummyGame implements IGameLogic {
         MD5Model md5MeshModel1 = MD5Model.parse("/models/monster.md5mesh");
         GameItem monster = MD5Loader.process(md5MeshModel1, new Vector4f(1, 1, 1, 1));
         monster.setScale(0.05f);
-        monster.setPosition(90, 0, 0);
+        monster.setRotation(90, 0, 0);
 
         this.scene.setGameItems(new GameItem[]{quadGameItem, monster});
 
@@ -147,6 +147,7 @@ public class DummyGame implements IGameLogic {
         lightDirection.x = 0;
         lightDirection.y = yValue;
         lightDirection.z = zValue;
+        this.hud.setStatusText("X: " + this.camera.getPosition().x + ", Y: " + this.camera.getPosition().y + ", Z: " + this.camera.getPosition().z + ", RotX: " + this.camera.getRotation().x + ", RotY: " + this.camera.getRotation().y + ", RotZ: " + this.camera.getRotation().z);
     }
 
     @Override

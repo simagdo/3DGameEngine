@@ -5,8 +5,11 @@ import java.util.List;
 public class MD5ModelHeader {
 
     private String version;
+
     private String commandLine;
+
     private int numJoints;
+
     private int numMeshes;
 
     public String getVersion() {
@@ -18,7 +21,7 @@ public class MD5ModelHeader {
     }
 
     public String getCommandLine() {
-        return this.commandLine;
+        return commandLine;
     }
 
     public void setCommandLine(String commandLine) {
@@ -34,11 +37,17 @@ public class MD5ModelHeader {
     }
 
     public int getNumMeshes() {
-        return this.numMeshes;
+        return numMeshes;
     }
 
     public void setNumMeshes(int numMeshes) {
         this.numMeshes = numMeshes;
+    }
+    
+    @Override
+    public String toString() {
+        return "[version: " + version + ", commandLine: " + commandLine +
+                ", numJoints: " + numJoints + ", numMeshes: " + numMeshes + "]";
     }
 
     public static MD5ModelHeader parse(List<String> lines) throws Exception {
@@ -77,13 +86,6 @@ public class MD5ModelHeader {
             }
         }
 
-        return header;
-    }
-
-    @Override
-    public String toString() {
-        return "[version: " + this.version + ", commandLine: " + this.commandLine +
-                ", numJoints: " + this.numJoints + ", numMeshes: " + this.numMeshes + "]";
-    }
-
+        return header;        
+    }    
 }

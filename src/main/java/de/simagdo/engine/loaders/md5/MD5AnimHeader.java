@@ -2,17 +2,22 @@ package de.simagdo.engine.loaders.md5;
 
 import java.util.List;
 
-public class MD5ModelAnimationHeader {
-
+public class MD5AnimHeader {
+    
     private String version;
+
     private String commandLine;
+
     private int numFrames;
+
     private int numJoints;
+
     private int frameRate;
+
     private int numAnimatedComponents;
 
     public String getVersion() {
-        return this.version;
+        return version;
     }
 
     public void setVersion(String version) {
@@ -20,7 +25,7 @@ public class MD5ModelAnimationHeader {
     }
 
     public String getCommandLine() {
-        return this.commandLine;
+        return commandLine;
     }
 
     public void setCommandLine(String commandLine) {
@@ -28,7 +33,7 @@ public class MD5ModelAnimationHeader {
     }
 
     public int getNumFrames() {
-        return this.numFrames;
+        return numFrames;
     }
 
     public void setNumFrames(int numFrames) {
@@ -36,7 +41,7 @@ public class MD5ModelAnimationHeader {
     }
 
     public int getNumJoints() {
-        return this.numJoints;
+        return numJoints;
     }
 
     public void setNumJoints(int numJoints) {
@@ -44,7 +49,7 @@ public class MD5ModelAnimationHeader {
     }
 
     public int getFrameRate() {
-        return this.frameRate;
+        return frameRate;
     }
 
     public void setFrameRate(int frameRate) {
@@ -52,16 +57,23 @@ public class MD5ModelAnimationHeader {
     }
 
     public int getNumAnimatedComponents() {
-        return this.numAnimatedComponents;
+        return numAnimatedComponents;
     }
 
     public void setNumAnimatedComponents(int numAnimatedComponents) {
         this.numAnimatedComponents = numAnimatedComponents;
     }
+    
+    @Override
+    public String toString() {
+        return "animHeader: [version: " + version + ", commandLine: " + commandLine +
+                ", numFrames: " + numFrames + ", numJoints: " + numJoints +
+                ", frameRate: " + frameRate + ", numAnimatedComponents:" + numAnimatedComponents + "]";
+    }
 
-    public static MD5ModelAnimationHeader parse(List<String> lines) throws Exception {
-        MD5ModelAnimationHeader header = new MD5ModelAnimationHeader();
-
+    public static MD5AnimHeader parse(List<String> lines) throws Exception  {
+        MD5AnimHeader header = new MD5AnimHeader();
+        
         int numLines = lines != null ? lines.size() : 0;
         if (numLines == 0) {
             throw new Exception("Cannot parse empty file");
@@ -103,12 +115,4 @@ public class MD5ModelAnimationHeader {
         }
         return header;
     }
-
-    @Override
-    public String toString() {
-        return "animHeader: [version: " + this.version + ", commandLine: " + this.commandLine +
-                ", numFrames: " + this.numFrames + ", numJoints: " + this.numJoints +
-                ", frameRate: " + this.frameRate + ", numAnimatedComponents:" + this.numAnimatedComponents + "]";
-    }
-
 }
