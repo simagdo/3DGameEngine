@@ -1,6 +1,8 @@
 package de.simagdo.engine.graph;
 
 import de.simagdo.engine.*;
+import de.simagdo.engine.graph.animation.AnimatedFrame;
+import de.simagdo.engine.graph.animation.AnimatedGameItem;
 import de.simagdo.engine.graph.lights.DirectionalLight;
 import de.simagdo.engine.graph.lights.OrthoCoords;
 import de.simagdo.engine.graph.lights.PointLight;
@@ -76,6 +78,9 @@ public class Renderer {
         this.sceneShaderProgram.createUniform("shadowMap");
         this.sceneShaderProgram.createUniform("orthoProjectionMatrix");
         this.sceneShaderProgram.createUniform("modelLightViewMatrix");
+
+        //Create uniform for joint matrices
+        this.sceneShaderProgram.createUniform("jointsMatrix");
     }
 
     private void setupHudShader() throws Exception {
@@ -169,6 +174,13 @@ public class Renderer {
                 this.sceneShaderProgram.setUniform("modelViewMatrix", modelViewMatrix);
                 Matrix4f modelLightViewMatrix = this.transformation.buildModelLightViewMatrix(gameItem, lightViewMatrix);
                 this.sceneShaderProgram.setUniform("modelLightViewMatrix", modelLightViewMatrix);
+
+                if (gameItem instanceof AnimatedGameItem) {
+                    AnimatedGameItem animatedGameItem = (AnimatedGameItem) gameItem;
+                    AnimatedFrame frame = animatedGameItem.getCurrentFrame();
+                    this.sceneShaderProgram.setUniform("jointsMatrix", frame.getJointMatrices());
+                }
+
             });
         }
 
