@@ -116,6 +116,8 @@ public class Renderer {
 
         this.depthShaderProgram.createUniform("orthoProjectionMatrix");
         this.depthShaderProgram.createUniform("modelLightViewMatrix");
+
+        //Create uniform for joint matrices
     }
 
     public void clear() {
@@ -311,6 +313,13 @@ public class Renderer {
             mesh.renderList(gameItems, gameItem -> {
                 Matrix4f modelLightViewMatrix = this.transformation.buildModelViewMatrix(gameItem, lightViewMatrix);
                 this.depthShaderProgram.setUniform("modelLightViewMatrix", modelLightViewMatrix);
+
+                if (gameItem instanceof AnimatedGameItem) {
+                    AnimatedGameItem animatedGameItem = (AnimatedGameItem) gameItem;
+                    AnimatedFrame frame = animatedGameItem.getCurrentFrame();
+                    this.sceneShaderProgram.setUniform("jointsMatrix", frame.getJointMatrices());
+                }
+
             });
         });
 
