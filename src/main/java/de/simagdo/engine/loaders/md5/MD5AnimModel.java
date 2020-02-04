@@ -8,21 +8,17 @@ import java.util.List;
 public class MD5AnimModel {
 
     private MD5AnimHeader header;
-
     private MD5Hierarchy hierarchy;
-
     private MD5BoundInfo boundInfo;
-
     private MD5BaseFrame baseFrame;
-
     private List<MD5Frame> frames;
 
     public MD5AnimModel() {
-        frames = new ArrayList<>();
+        this.frames = new ArrayList<>();
     }
 
     public MD5AnimHeader getHeader() {
-        return header;
+        return this.header;
     }
 
     public void setHeader(MD5AnimHeader header) {
@@ -30,7 +26,7 @@ public class MD5AnimModel {
     }
 
     public MD5Hierarchy getHierarchy() {
-        return hierarchy;
+        return this.hierarchy;
     }
 
     public void setHierarchy(MD5Hierarchy hierarchy) {
@@ -38,7 +34,7 @@ public class MD5AnimModel {
     }
 
     public MD5BoundInfo getBoundInfo() {
-        return boundInfo;
+        return this.boundInfo;
     }
 
     public void setBoundInfo(MD5BoundInfo boundInfo) {
@@ -46,7 +42,7 @@ public class MD5AnimModel {
     }
 
     public MD5BaseFrame getBaseFrame() {
-        return baseFrame;
+        return this.baseFrame;
     }
 
     public void setBaseFrame(MD5BaseFrame baseFrame) {
@@ -54,7 +50,7 @@ public class MD5AnimModel {
     }
 
     public List<MD5Frame> getFrames() {
-        return frames;
+        return this.frames;
     }
 
     public void setFrames(List<MD5Frame> frames) {
@@ -69,7 +65,7 @@ public class MD5AnimModel {
         str.append(getBoundInfo()).append(System.lineSeparator());
         str.append(getBaseFrame()).append(System.lineSeparator());
 
-        for (MD5Frame frame : frames) {
+        for (MD5Frame frame : this.frames) {
             str.append(frame).append(System.lineSeparator());
         }
         return str.toString();
