@@ -1,5 +1,9 @@
 package de.simagdo.engine.loaders.md5;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import de.simagdo.engine.graph.Material;
 import de.simagdo.engine.graph.Mesh;
 import de.simagdo.engine.graph.animation.AnimatedFrame;
@@ -7,14 +11,7 @@ import de.simagdo.engine.graph.animation.AnimatedGameItem;
 import de.simagdo.engine.graph.animation.AnimatedVertex;
 import de.simagdo.engine.graph.text.Texture;
 import de.simagdo.utils.Utils;
-import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import org.joml.*;
 
 public class MD5Loader {
 
@@ -27,7 +24,7 @@ public class MD5Loader {
      * @return
      * @throws Exception
      */
-    public static AnimatedGameItem process(MD5Model md5Model, MD5AnimationModel animModel, Vector4f defaultColour) throws Exception {
+    public static AnimatedGameItem process(MD5Model md5Model, MD5AnimModel animModel, Vector4f defaultColour) throws Exception {
         List<Matrix4f> invJointMatrices = calcInJointMatrices(md5Model);
         List<AnimatedFrame> animatedFrames = processAnimationFrames(md5Model, animModel, invJointMatrices);
 
@@ -126,7 +123,7 @@ public class MD5Loader {
         return mesh;
     }
 
-    private static List<AnimatedFrame> processAnimationFrames(MD5Model md5Model, MD5AnimationModel animModel, List<Matrix4f> invJointMatrices) {
+    private static List<AnimatedFrame> processAnimationFrames(MD5Model md5Model, MD5AnimModel animModel, List<Matrix4f> invJointMatrices) {
         List<AnimatedFrame> animatedFrames = new ArrayList<>();
         List<MD5Frame> frames = animModel.getFrames();
         for (MD5Frame frame : frames) {
@@ -136,7 +133,7 @@ public class MD5Loader {
         return animatedFrames;
     }
 
-    private static AnimatedFrame processAnimationFrame(MD5Model md5Model, MD5AnimationModel animModel, MD5Frame frame, List<Matrix4f> invJointMatrices) {
+    private static AnimatedFrame processAnimationFrame(MD5Model md5Model, MD5AnimModel animModel, MD5Frame frame, List<Matrix4f> invJointMatrices) {
         AnimatedFrame result = new AnimatedFrame();
 
         MD5BaseFrame baseFrame = animModel.getBaseFrame();

@@ -59,6 +59,13 @@ public class MD5AnimHeader {
         this.numAnimatedComponents = numAnimatedComponents;
     }
 
+    @Override
+    public String toString() {
+        return "animHeader: [version: " + this.version + ", commandLine: " + this.commandLine +
+                ", numFrames: " + this.numFrames + ", numJoints: " + this.numJoints +
+                ", frameRate: " + this.frameRate + ", numAnimatedComponents:" + this.numAnimatedComponents + "]";
+    }
+
     public static MD5AnimHeader parse(List<String> lines) throws Exception {
         MD5AnimHeader header = new MD5AnimHeader();
 
@@ -102,12 +109,5 @@ public class MD5AnimHeader {
             }
         }
         return header;
-    }
-
-    @Override
-    public String toString() {
-        return "animHeader: [version: " + this.version + ", commandLine: " + this.commandLine +
-                ", numFrames: " + this.numFrames + ", numJoints: " + this.numJoints +
-                ", frameRate: " + this.frameRate + ", numAnimatedComponents:" + this.numAnimatedComponents + "]";
     }
 }

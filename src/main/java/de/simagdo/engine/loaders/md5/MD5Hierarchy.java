@@ -16,7 +16,17 @@ public class MD5Hierarchy {
     public void setHierarchyDataList(List<MD5HierarchyData> hierarchyDataList) {
         this.hierarchyDataList = hierarchyDataList;
     }
-    
+
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder("hierarchy [" + System.lineSeparator());
+        for (MD5HierarchyData hierarchyData : this.hierarchyDataList) {
+            str.append(hierarchyData).append(System.lineSeparator());
+        }
+        str.append("]").append(System.lineSeparator());
+        return str.toString();
+    }
+
     public static MD5Hierarchy parse(List<String> blockBody) {
         MD5Hierarchy result = new MD5Hierarchy();
         List<MD5HierarchyData> hierarchyDataList = new ArrayList<>();
@@ -30,13 +40,4 @@ public class MD5Hierarchy {
         return result;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder str = new StringBuilder("hierarchy [" + System.lineSeparator());
-        for (MD5HierarchyData hierarchyData : this.hierarchyDataList) {
-            str.append(hierarchyData).append(System.lineSeparator());
-        }
-        str.append("]").append(System.lineSeparator());
-        return str.toString();
-    }
 }

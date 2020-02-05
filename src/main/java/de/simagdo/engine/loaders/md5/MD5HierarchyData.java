@@ -58,6 +58,7 @@ public class MD5HierarchyData {
 
     @Override
     public String toString() {
-        return "[name: " + name + ", parentIndex: " + parentIndex + ", flags: " + flags + ", startIndex: " + startIndex + "]";
+        return "[name: " + this.name + ", parentIndex: " + this.parentIndex + ", flags: " + this.flags + ", startIndex: " + this.startIndex + "]";
     }
+
 }

@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 public class MD5Bound {
 
+
     private static final Pattern PATTERN_BOUND = Pattern.compile("\\s*" + MD5Utils.VECTOR3_REGEXP + "\\s*" + MD5Utils.VECTOR3_REGEXP + ".*");
     private Vector3f minBound;
     private Vector3f maxBound;
@@ -26,6 +27,7 @@ public class MD5Bound {
     public void setMaxBound(Vector3f maxBound) {
         this.maxBound = maxBound;
     }
+
 
     public static MD5Bound parseLine(String line) {
         MD5Bound result = null;
@@ -49,4 +51,5 @@ public class MD5Bound {
     public String toString() {
         return "[minBound: " + this.minBound + ", maxBound: " + this.maxBound + "]";
     }
+
 }

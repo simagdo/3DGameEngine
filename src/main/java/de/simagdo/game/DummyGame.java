@@ -6,7 +6,7 @@ import de.simagdo.engine.graph.animation.AnimatedGameItem;
 import de.simagdo.engine.graph.lights.DirectionalLight;
 import de.simagdo.engine.items.GameItem;
 import de.simagdo.engine.items.Terrain;
-import de.simagdo.engine.loaders.md5.MD5AnimationModel;
+import de.simagdo.engine.loaders.md5.MD5AnimModel;
 import de.simagdo.engine.loaders.md5.MD5Loader;
 import de.simagdo.engine.loaders.md5.MD5Model;
 import de.simagdo.engine.loaders.obj.OBJLoader;
@@ -56,23 +56,15 @@ public class DummyGame implements IGameLogic {
         quadGameItem.setPosition(0, 0, 0);
         quadGameItem.setScale(2.5f);
 
-        this.scene.setGameItems(new GameItem[]{quadGameItem});
 
         //Setup GameItems
-        /*MD5Model md5MeshModel = MD5Model.parse("/models/monster.md5mesh");
-        MD5AnimationModel md5AnimationModel = MD5AnimationModel.parse("/models/monster.md5anim");
-        this.monster = MD5Loader.process(md5MeshModel, md5AnimationModel, new Vector4f(1, 1, 1, 1));
+        MD5Model md5MeshModel = MD5Model.parse("/models/monster.md5mesh");
+        MD5AnimModel md5AnimModel = MD5AnimModel.parse("/models/monster.md5anim");
+        this.monster = MD5Loader.process(md5MeshModel, md5AnimModel, new Vector4f(1, 1, 1, 1));
         this.monster.setScale(0.05f);
-        this.monster.setRotation(90, 0, 0);
+        this.monster.setRotation(90, 0, 90);
 
-        this.scene.setGameItems(new GameItem[]{quadGameItem, this.monster});*/
-
-        /*MD5Model md5Meshodel = MD5Model.parse("/models/monster.md5mesh");
-        GameItem monster = MD5Loader.process(md5Meshodel, new Vector4f(1, 1, 1, 1));
-        monster.setScale(0.05f);
-        monster.setRotation(90, 0, 0);
-
-        scene.setGameItems(new GameItem[]{quadGameItem, monster});*/
+        this.scene.setGameItems(new GameItem[]{quadGameItem, this.monster});
 
         //Setup Lights
         this.setupLights();
@@ -131,6 +123,7 @@ public class DummyGame implements IGameLogic {
         }
         if (window.isKeyPressed(GLFW_KEY_SPACE)) {
             this.monster.nextFrame();
+
         }
 
     }

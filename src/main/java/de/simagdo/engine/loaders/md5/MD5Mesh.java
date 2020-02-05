@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -15,7 +14,7 @@ public class MD5Mesh {
             + MD5Utils.FLOAT_REGEXP + ")\\s*(" + MD5Utils.FLOAT_REGEXP + ")\\s*\\)\\s*(\\d+)\\s*(\\d+)");
     private static final Pattern PATTERN_TRI = Pattern.compile("\\s*tri\\s*(\\d+)\\s*(\\d+)\\s*(\\d+)\\s*(\\d+)");
     private static final Pattern PATTERN_WEIGHT = Pattern.compile("\\s*weight\\s*(\\d+)\\s*(\\d+)\\s*" +
-            "(" + MD5Utils.FLOAT_REGEXP + ")\\s*" + MD5Utils.VECTOR3_REGEXP);
+            "(" + MD5Utils.FLOAT_REGEXP + ")\\s*" + MD5Utils.VECTOR3_REGEXP );
     private String texture;
     private List<MD5Vertex> vertices;
     private List<MD5Triangle> triangles;
@@ -30,7 +29,7 @@ public class MD5Mesh {
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder("mesh [" + System.lineSeparator());
-        str.append("texture: ").append(texture).append(System.lineSeparator());
+        str.append("texture: ").append(this.texture).append(System.lineSeparator());
 
         str.append("vertices [").append(System.lineSeparator());
         for (MD5Vertex vertex : this.vertices) {

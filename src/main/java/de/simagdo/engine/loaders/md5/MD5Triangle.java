@@ -1,5 +1,7 @@
 package de.simagdo.engine.loaders.md5;
 
+import org.joml.Vector2f;
+
 public class MD5Triangle {
 
     private int index;
@@ -44,5 +46,4 @@ public class MD5Triangle {
         return "[index: " + this.index + ", vertex0: " + this.vertex0
                 + ", vertex1: " + this.vertex1 + ", vertex2: " + this.vertex2 + "]";
     }
-
 }

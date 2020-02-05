@@ -29,8 +29,9 @@ public class Scene {
     public void setGameItems(GameItem[] gameItems) {
         // Create a map of meshes to speed up rendering
         for (GameItem gameItem : gameItems) {
-            for (Mesh mesh : gameItem.getMeshes()) {
-                List<GameItem> list = this.meshMap.computeIfAbsent(mesh, k -> new ArrayList<>());
+            Mesh[] meshes = gameItem.getMeshes();
+            for (Mesh mesh : meshes) {
+                List<GameItem> list = meshMap.computeIfAbsent(mesh, key -> new ArrayList<>());
                 list.add(gameItem);
             }
         }

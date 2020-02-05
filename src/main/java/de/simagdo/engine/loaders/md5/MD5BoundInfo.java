@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.joml.Vector3f;
 
 public class MD5BoundInfo {
@@ -11,7 +12,7 @@ public class MD5BoundInfo {
     private List<MD5Bound> bounds;
 
     public List<MD5Bound> getBounds() {
-        return bounds;
+        return this.bounds;
     }
 
     public void setBounds(List<MD5Bound> bounds) {
@@ -21,7 +22,7 @@ public class MD5BoundInfo {
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder("bounds [" + System.lineSeparator());
-        for (MD5Bound bound : bounds) {
+        for (MD5Bound bound : this.bounds) {
             str.append(bound).append(System.lineSeparator());
         }
         str.append("]").append(System.lineSeparator());

@@ -8,7 +8,7 @@ public class MD5JointInfo {
     private List<MD5JointData> joints;
 
     public List<MD5JointData> getJoints() {
-        return joints;
+        return this.joints;
     }
 
     public void setJoints(List<MD5JointData> joints) {
@@ -18,7 +18,7 @@ public class MD5JointInfo {
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder("joints [" + System.lineSeparator());
-        for (MD5JointData joint : joints) {
+        for (MD5JointData joint : this.joints) {
             str.append(joint).append(System.lineSeparator());
         }
         str.append("]").append(System.lineSeparator());

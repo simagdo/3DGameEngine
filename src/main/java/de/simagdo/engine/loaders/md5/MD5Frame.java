@@ -8,11 +8,10 @@ import java.util.List;
 public class MD5Frame {
 
     private int id;
-
     private float[] frameData;
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
     public void setId(int id) {
@@ -20,21 +19,11 @@ public class MD5Frame {
     }
 
     public float[] getFrameData() {
-        return frameData;
+        return this.frameData;
     }
 
     public void setFrameData(float[] frameData) {
         this.frameData = frameData;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder str = new StringBuilder("frame " + id + " [data: " + System.lineSeparator());
-        for (float frameData : frameData) {
-            str.append(frameData).append(System.lineSeparator());
-        }
-        str.append("]").append(System.lineSeparator());
-        return str.toString();
     }
 
     public static MD5Frame parse(String blockId, List<String> blockBody) throws Exception {
@@ -67,4 +56,15 @@ public class MD5Frame {
         }
         return data;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder("frame " + this.id + " [data: " + System.lineSeparator());
+        for (float frameData : this.frameData) {
+            str.append(frameData).append(System.lineSeparator());
+        }
+        str.append("]").append(System.lineSeparator());
+        return str.toString();
+    }
+
 }
