@@ -70,4 +70,11 @@ public class GameItem {
         this.meshes = new Mesh[]{mesh};
     }
 
+    public void cleanUp() {
+        int numMeshes = this.meshes != null ? this.meshes.length : 0;
+        for (int i = 0; i < numMeshes; i++) {
+            this.meshes[i].cleanUp();
+        }
+    }
+
 }

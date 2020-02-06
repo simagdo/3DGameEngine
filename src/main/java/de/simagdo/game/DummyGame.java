@@ -4,6 +4,9 @@ import de.simagdo.engine.*;
 import de.simagdo.engine.graph.*;
 import de.simagdo.engine.graph.animation.AnimatedGameItem;
 import de.simagdo.engine.graph.lights.DirectionalLight;
+import de.simagdo.engine.graph.particles.FlowParticleEmitter;
+import de.simagdo.engine.graph.particles.Particle;
+import de.simagdo.engine.graph.text.Texture;
 import de.simagdo.engine.items.GameItem;
 import de.simagdo.engine.items.Terrain;
 import de.simagdo.engine.loaders.md5.MD5AnimModel;
@@ -31,7 +34,7 @@ public class DummyGame implements IGameLogic {
     private float lightAngle;
     private float angleInc;
     private Terrain terrain;
-    private AnimatedGameItem monster;
+    private FlowParticleEmitter particleEmitter;
 
     public DummyGame() {
         this.renderer = new Renderer();
@@ -56,15 +59,26 @@ public class DummyGame implements IGameLogic {
         quadGameItem.setPosition(0, 0, 0);
         quadGameItem.setScale(2.5f);
 
+        this.scene.setGameItems(new GameItem[]{quadGameItem});
 
-        //Setup GameItems
-        MD5Model md5MeshModel = MD5Model.parse("/models/monster.md5mesh");
-        MD5AnimModel md5AnimModel = MD5AnimModel.parse("/models/monster.md5anim");
-        this.monster = MD5Loader.process(md5MeshModel, md5AnimModel, new Vector4f(1, 1, 1, 1));
-        this.monster.setScale(0.05f);
-        this.monster.setRotation(90, 0, 90);
-
-        this.scene.setGameItems(new GameItem[]{quadGameItem, this.monster});
+        Vector3f particleSpeed = new Vector3f(0, 1, 0);
+        particleSpeed.mul(2.5f);
+        long ttl = 4000;
+        int maxParticles = 200;
+        long creationPeriodMillis = 300;
+        float range = 0.2f;
+        float scale = 1.0f;
+        Mesh partMesh = OBJLoader.loadMesh("/models/particle.obj");
+        Texture texture = new Texture("/textures/particle.png");
+        Material partMaterial = new Material(texture, reflectance);
+        partMesh.setMaterial(partMaterial);
+        Particle particle = new Particle(partMesh, particleSpeed, ttl);
+        particle.setScale(scale);
+        particleEmitter = new FlowParticleEmitter(particle, maxParticles, creationPeriodMillis);
+        particleEmitter.setActive(true);
+        particleEmitter.setPositionRndRange(range);
+        particleEmitter.setSpeedRndRange(range);
+        this.scene.setParticleEmitters(new FlowParticleEmitter[]{particleEmitter});
 
         //Setup Lights
         this.setupLights();
@@ -121,10 +135,6 @@ public class DummyGame implements IGameLogic {
         } else {
             this.angleInc = 0;
         }
-        if (window.isKeyPressed(GLFW_KEY_SPACE)) {
-            this.monster.nextFrame();
-
-        }
 
     }
 
@@ -157,6 +167,9 @@ public class DummyGame implements IGameLogic {
         lightDirection.y = yValue;
         lightDirection.z = zValue;
         this.hud.setStatusText("X: " + this.camera.getPosition().x + ", Y: " + this.camera.getPosition().y + ", Z: " + this.camera.getPosition().z + ", RotX: " + this.camera.getRotation().x + ", RotY: " + this.camera.getRotation().y + ", RotZ: " + this.camera.getRotation().z);
+
+        this.particleEmitter.update((long) (interval * 1000));
+
     }
 
     @Override

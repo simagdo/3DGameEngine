@@ -1,6 +1,7 @@
 package de.simagdo.engine;
 
 import de.simagdo.engine.graph.Mesh;
+import de.simagdo.engine.graph.particles.IParticleEmitter;
 import de.simagdo.engine.graph.weather.Fog;
 import de.simagdo.engine.items.GameItem;
 import de.simagdo.engine.items.SkyBox;
@@ -16,6 +17,7 @@ public class Scene {
     private SkyBox skyBox;
     private SceneLight sceneLight;
     private Fog fog;
+    private IParticleEmitter[] iParticleEmitters;
 
     public Scene() {
         this.meshMap = new HashMap<>();
@@ -64,4 +66,18 @@ public class Scene {
     public void setFog(Fog fog) {
         this.fog = fog;
     }
+
+    public IParticleEmitter[] getParticleEmitters() {
+        return iParticleEmitters;
+    }
+
+    public void setParticleEmitters(IParticleEmitter[] iParticleEmitters) {
+        this.iParticleEmitters = iParticleEmitters;
+    }
+
+    public void cleanUp() {
+        for (Mesh mesh : this.meshMap.keySet()) mesh.cleanUp();
+        for (IParticleEmitter particleEmitter : this.getParticleEmitters()) particleEmitter.cleanUp();
+    }
+
 }

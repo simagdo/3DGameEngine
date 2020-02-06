@@ -7,6 +7,7 @@ import de.simagdo.engine.graph.lights.DirectionalLight;
 import de.simagdo.engine.graph.lights.OrthoCoords;
 import de.simagdo.engine.graph.lights.PointLight;
 import de.simagdo.engine.graph.lights.SpotLight;
+import de.simagdo.engine.graph.particles.IParticleEmitter;
 import de.simagdo.engine.items.GameItem;
 import de.simagdo.engine.items.SkyBox;
 import de.simagdo.engine.window.Window;
@@ -28,6 +29,7 @@ public class Renderer {
     private ShaderProgram hudShaderProgram;
     private ShaderProgram skyBoxShaderProgram;
     private ShaderProgram depthShaderProgram;
+    private ShaderProgram particlesShaderProgram;
     private static final float FOV = (float) Math.toRadians(60.0f);
     private static final float Z_NEAR = 0.01f;
     private static final float Z_FAR = 1000.f;
@@ -46,8 +48,9 @@ public class Renderer {
         this.shadowMap = new ShadowMap();
         this.setupDepthShader();
         this.setupSceneShader();
-        this.setupHudShader();
         this.setupSkyBoxShader();
+        this.setupParticlesShader();
+        this.setupHudShader();
     }
 
     private void setupSceneShader() throws Exception {
@@ -118,6 +121,18 @@ public class Renderer {
         this.depthShaderProgram.createUniform("modelLightViewMatrix");
 
         //Create uniform for joint matrices
+        this.depthShaderProgram.createUniform("jointsMatrix");
+    }
+
+    private void setupParticlesShader() throws Exception {
+        this.particlesShaderProgram = new ShaderProgram();
+        this.particlesShaderProgram.createVertexShader(Utils.loadResource("/shaders/particles_vertex.vs"));
+        this.particlesShaderProgram.createFragmentShader(Utils.loadResource("/shaders/particles_fragment.fs"));
+        this.particlesShaderProgram.link();
+
+        this.particlesShaderProgram.createUniform("projectionMatrix");
+        this.particlesShaderProgram.createUniform("modelViewMatrix");
+        this.particlesShaderProgram.createUniform("texture_sampler");
     }
 
     public void clear() {
@@ -141,6 +156,9 @@ public class Renderer {
 
         //Render SkyBox
         this.renderSkyBox(window, camera, scene);
+
+        //Render Particles
+        this.renderParticles(window, camera, scene);
 
         //Render HUD
         this.renderHud(window, hud);
@@ -274,14 +292,21 @@ public class Renderer {
             this.sceneShaderProgram.setUniform("projectionMatrix", projectionMatrix);
 
             Matrix4f viewMatrix = this.transformation.getViewMatrix();
+            float m30 = viewMatrix.m30();
             viewMatrix.m30(0);
+            float m31 = viewMatrix.m31();
             viewMatrix.m31(0);
+            float m32 = viewMatrix.m32();
             viewMatrix.m32(0);
             Matrix4f modelViewMatrix = this.transformation.buildModelViewMatrix(skyBox, viewMatrix);
             this.skyBoxShaderProgram.setUniform("modelViewMatrix", modelViewMatrix);
             this.skyBoxShaderProgram.setUniform("ambientLight", scene.getSceneLight().getAmbientLight());
 
             scene.getSkyBox().getMesh().render();
+
+            viewMatrix.m30(m30);
+            viewMatrix.m31(m31);
+            viewMatrix.m32(m32);
 
             this.skyBoxShaderProgram.unbind();
         }
@@ -329,11 +354,43 @@ public class Renderer {
 
     }
 
+    private void renderParticles(Window window, Camera camera, Scene scene) {
+        this.particlesShaderProgram.bind();
+
+        this.particlesShaderProgram.setUniform("texture_sampler", 0);
+        Matrix4f projectionMatrix = this.transformation.getProjectionMatrix();
+        this.particlesShaderProgram.setUniform("projectionMatrix", projectionMatrix);
+
+        Matrix4f viewMatrix = this.transformation.getViewMatrix();
+        IParticleEmitter[] emitters = scene.getParticleEmitters();
+        int numEmitters = emitters != null ? emitters.length : 0;
+
+        glDepthMask(false);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+        for (int i = 0; i < numEmitters; i++) {
+            IParticleEmitter emitter = emitters[i];
+            Mesh mesh = emitter.getBaseParticle().getMesh();
+
+            mesh.renderList((emitter.getParticles()), (GameItem gameItem) -> {
+                Matrix4f modelViewMatrix = this.transformation.buildModelViewMatrix(gameItem, viewMatrix);
+                this.particlesShaderProgram.setUniform("modelViewMatrix", modelViewMatrix);
+            });
+
+        }
+
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDepthMask(true);
+
+        this.particlesShaderProgram.unbind();
+    }
+
     public void cleanUp() {
         if (this.sceneShaderProgram != null) this.sceneShaderProgram.cleanUp();
         if (this.hudShaderProgram != null) this.hudShaderProgram.cleanUp();
         if (this.skyBoxShaderProgram != null) this.skyBoxShaderProgram.cleanUp();
         if (this.shadowMap != null) this.shadowMap.cleanUp();
+        if (this.particlesShaderProgram != null) this.particlesShaderProgram.cleanUp();
     }
 
 }
