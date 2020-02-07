@@ -8,6 +8,7 @@ import de.simagdo.engine.graph.lights.OrthoCoords;
 import de.simagdo.engine.graph.lights.PointLight;
 import de.simagdo.engine.graph.lights.SpotLight;
 import de.simagdo.engine.graph.particles.IParticleEmitter;
+import de.simagdo.engine.graph.text.Texture;
 import de.simagdo.engine.items.GameItem;
 import de.simagdo.engine.items.SkyBox;
 import de.simagdo.engine.window.Window;
@@ -133,6 +134,11 @@ public class Renderer {
         this.particlesShaderProgram.createUniform("projectionMatrix");
         this.particlesShaderProgram.createUniform("modelViewMatrix");
         this.particlesShaderProgram.createUniform("texture_sampler");
+
+        this.particlesShaderProgram.createUniform("texXOffset");
+        this.particlesShaderProgram.createUniform("texYOffset");
+        this.particlesShaderProgram.createUniform("numCols");
+        this.particlesShaderProgram.createUniform("numRows");
     }
 
     public void clear() {
@@ -372,8 +378,25 @@ public class Renderer {
             IParticleEmitter emitter = emitters[i];
             Mesh mesh = emitter.getBaseParticle().getMesh();
 
+            Texture texture = mesh.getMaterial().getTexture();
+            this.particlesShaderProgram.setUniform("numCols", texture.getNumCols());
+            this.particlesShaderProgram.setUniform("numRows", texture.getNumRows());
+
             mesh.renderList((emitter.getParticles()), (GameItem gameItem) -> {
+
+                int col = gameItem.getTextPos() % texture.getNumCols();
+                int row = gameItem.getTextPos() % texture.getNumRows();
+                float texXOffset = (float) col / texture.getNumCols();
+                float texYOffset = (float) row / texture.getNumRows();
+                this.particlesShaderProgram.setUniform("texXOffset", texXOffset);
+                this.particlesShaderProgram.setUniform("texYOffset", texYOffset);
+
+                Matrix4f modelMatrix = this.transformation.buildModelMatrix(gameItem);
+                viewMatrix.transpose3x3(modelMatrix);
+                viewMatrix.scale(gameItem.getScale());
+
                 Matrix4f modelViewMatrix = this.transformation.buildModelViewMatrix(gameItem, viewMatrix);
+                modelViewMatrix.scale(gameItem.getScale());
                 this.particlesShaderProgram.setUniform("modelViewMatrix", modelViewMatrix);
             });
 

@@ -18,6 +18,7 @@ public class FlowParticleEmitter implements IParticleEmitter {
     private float speedRndRange;
     private float positionRndRange;
     private float scaleRndRange;
+    private long animRange;
 
     public FlowParticleEmitter(Particle baseParticle, int maxParticles, long creationPeriodMillis) {
         this.particles = new ArrayList<>();
@@ -46,6 +47,14 @@ public class FlowParticleEmitter implements IParticleEmitter {
 
     public float getSpeedRndRange() {
         return this.speedRndRange;
+    }
+
+    public long getAnimRange() {
+        return animRange;
+    }
+
+    public void setAnimRange(long animRange) {
+        this.animRange = animRange;
     }
 
     public void setSpeedRndRange(float speedRndRange) {
@@ -94,9 +103,11 @@ public class FlowParticleEmitter implements IParticleEmitter {
         float speedInc = sign * (float) Math.random() * this.speedRndRange;
         float posInc = sign * (float) Math.random() * this.positionRndRange;
         float scaleInc = sign * (float) Math.random() * this.scaleRndRange;
+        long updateAnimInc = (long) sign * (long) (Math.random() * (float) this.animRange);
         particle.getPosition().add(posInc, posInc, posInc);
         particle.getSpeed().add(speedInc, speedInc, speedInc);
         particle.setScale(particle.getScale() + scaleInc);
+        particle.setUpdateTextureMillis(particle.getUpdateTextureMillis() + updateAnimInc);
         this.particles.add(particle);
     }
 

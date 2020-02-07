@@ -9,11 +9,13 @@ public class GameItem {
     private final Vector3f position;
     private float scale;
     private final Vector3f rotation;
+    private int textPos;
 
     public GameItem() {
         this.position = new Vector3f(0, 0, 0);
         this.scale = 1;
         this.rotation = new Vector3f(0, 0, 0);
+        this.textPos = 0;
     }
 
     public GameItem(Mesh mesh) {
@@ -68,6 +70,14 @@ public class GameItem {
 
     public void setMesh(Mesh mesh) {
         this.meshes = new Mesh[]{mesh};
+    }
+
+    public int getTextPos() {
+        return textPos;
+    }
+
+    public void setTextPos(int textPos) {
+        this.textPos = textPos;
     }
 
     public void cleanUp() {
