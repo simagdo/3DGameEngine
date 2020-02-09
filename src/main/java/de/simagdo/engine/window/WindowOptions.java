@@ -4,5 +4,6 @@ public class WindowOptions {
 
     public boolean cullFace;
     public boolean showTriangles;
+    public boolean showFPS;
 
 }

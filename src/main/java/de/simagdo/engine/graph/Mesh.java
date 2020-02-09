@@ -18,7 +18,7 @@ import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 
 public class Mesh {
 
-    private final int vaoId;
+    protected final int vaoId;
     protected final List<Integer> vboIdList;
     private final int vertexCount;
     private Material material;
@@ -157,7 +157,7 @@ public class Mesh {
         this.endRender();
     }
 
-    private void initRender() {
+    protected void initRender() {
         Texture texture = this.material.getTexture();
         if (texture != null) {
             //Activate first texture Bank
@@ -185,7 +185,7 @@ public class Mesh {
 
     }
 
-    private void endRender() {
+    protected void endRender() {
         //Restore State
         GL20.glDisableVertexAttribArray(0);
         GL20.glDisableVertexAttribArray(1);
@@ -229,13 +229,13 @@ public class Mesh {
         GL30.glDeleteVertexArrays(this.vaoId);
     }
 
-    private static float[] createEmptyFloatArray(int length, float defaultValue) {
+    protected static float[] createEmptyFloatArray(int length, float defaultValue) {
         float[] result = new float[length];
         Arrays.fill(result, defaultValue);
         return result;
     }
 
-    private static int[] createEmptyIntArray(int length, int defaultValue) {
+    protected static int[] createEmptyIntArray(int length, int defaultValue) {
         int[] result = new int[length];
         Arrays.fill(result, defaultValue);
         return result;

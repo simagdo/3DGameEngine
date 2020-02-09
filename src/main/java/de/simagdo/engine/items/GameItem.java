@@ -1,6 +1,7 @@
 package de.simagdo.engine.items;
 
 import de.simagdo.engine.graph.Mesh;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class GameItem {
@@ -8,13 +9,13 @@ public class GameItem {
     private Mesh[] meshes;
     private final Vector3f position;
     private float scale;
-    private final Vector3f rotation;
+    private final Quaternionf rotation;
     private int textPos;
 
     public GameItem() {
         this.position = new Vector3f(0, 0, 0);
         this.scale = 1;
-        this.rotation = new Vector3f(0, 0, 0);
+        this.rotation = new Quaternionf();
         this.textPos = 0;
     }
 
@@ -54,14 +55,12 @@ public class GameItem {
         this.scale = scale;
     }
 
-    public Vector3f getRotation() {
+    public Quaternionf getRotation() {
         return this.rotation;
     }
 
-    public void setRotation(float x, float y, float z) {
-        this.rotation.x = x;
-        this.rotation.y = y;
-        this.rotation.z = z;
+    public void setRotation(Quaternionf quaternionf) {
+        this.rotation.set(quaternionf);
     }
 
     public void setMeshes(Mesh mesh) {

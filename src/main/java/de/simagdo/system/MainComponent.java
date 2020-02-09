@@ -12,6 +12,8 @@ public class MainComponent {
             boolean vSync = true;
             IGameLogic gameLogic = new DummyGame();
             WindowOptions windowOptions = new WindowOptions();
+            windowOptions.cullFace = true;
+            windowOptions.showFPS = true;
             GameEngine engine = new GameEngine("Game", 800, 600, vSync, windowOptions, gameLogic);
             engine.start();
         } catch (Exception e) {

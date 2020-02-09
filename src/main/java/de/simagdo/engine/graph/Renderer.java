@@ -18,6 +18,9 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
 
+import java.util.List;
+import java.util.Map;
+
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE2;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
@@ -63,7 +66,7 @@ public class Renderer {
 
         // Create uniforms for modelView and projection matrices and text
         this.sceneShaderProgram.createUniform("projectionMatrix");
-        this.sceneShaderProgram.createUniform("modelViewMatrix");
+        this.sceneShaderProgram.createUniform("modelViewNonInstancedMatrix");
         this.sceneShaderProgram.createUniform("texture_sampler");
         this.sceneShaderProgram.createUniform("normalMap");
 
@@ -81,10 +84,13 @@ public class Renderer {
         //Create uniforms for Shadow mapping
         this.sceneShaderProgram.createUniform("shadowMap");
         this.sceneShaderProgram.createUniform("orthoProjectionMatrix");
-        this.sceneShaderProgram.createUniform("modelLightViewMatrix");
+        this.sceneShaderProgram.createUniform("modelLightViewNonInstancedMatrix");
+        this.sceneShaderProgram.createUniform("renderShadow");
 
         //Create uniform for joint Matrices
         this.sceneShaderProgram.createUniform("jointsMatrix");
+
+        this.sceneShaderProgram.createUniform("isInstanced");
 
     }
 
@@ -110,6 +116,8 @@ public class Renderer {
         this.skyBoxShaderProgram.createUniform("modelViewMatrix");
         this.skyBoxShaderProgram.createUniform("texture_sampler");
         this.skyBoxShaderProgram.createUniform("ambientLight");
+        this.skyBoxShaderProgram.createUniform("colour");
+        this.skyBoxShaderProgram.createUniform("hasTexture");
     }
 
     private void setupDepthShader() throws Exception {
@@ -118,11 +126,11 @@ public class Renderer {
         this.depthShaderProgram.createFragmentShader(Utils.loadResource("/shaders/depth_fragment.fs"));
         this.depthShaderProgram.link();
 
-        this.depthShaderProgram.createUniform("orthoProjectionMatrix");
-        this.depthShaderProgram.createUniform("modelLightViewMatrix");
+        this.depthShaderProgram.createUniform("isInstanced");
 
-        //Create uniform for joint matrices
         this.depthShaderProgram.createUniform("jointsMatrix");
+        this.depthShaderProgram.createUniform("modelLightViewNonInstancedMatrix");
+        this.depthShaderProgram.createUniform("orthoProjectionMatrix");
     }
 
     private void setupParticlesShader() throws Exception {
@@ -190,26 +198,10 @@ public class Renderer {
         this.sceneShaderProgram.setUniform("texture_sampler", 0);
         this.sceneShaderProgram.setUniform("normalMap", 1);
         this.sceneShaderProgram.setUniform("shadowMap", 2);
+        this.sceneShaderProgram.setUniform("renderShadow", scene.isRenderShadows() ? 1 : 0);
 
-        // Render each gameItem
-        for (Mesh mesh : scene.getMeshMap().keySet()) {
-            this.sceneShaderProgram.setUniform("material", mesh.getMaterial());
-            glActiveTexture(GL_TEXTURE2);
-            glBindTexture(GL_TEXTURE_2D, this.shadowMap.getDepthMap().getId());
-            mesh.renderList(scene.getMeshMap().get(mesh), (GameItem gameItem) -> {
-                Matrix4f modelViewMatrix = this.transformation.buildModelViewMatrix(gameItem, viewMatrix);
-                this.sceneShaderProgram.setUniform("modelViewMatrix", modelViewMatrix);
-                Matrix4f modelLightViewMatrix = this.transformation.buildModelLightViewMatrix(gameItem, lightViewMatrix);
-                this.sceneShaderProgram.setUniform("modelLightViewMatrix", modelLightViewMatrix);
-
-                if (gameItem instanceof AnimatedGameItem) {
-                    AnimatedGameItem animatedGameItem = (AnimatedGameItem) gameItem;
-                    AnimatedFrame frame = animatedGameItem.getCurrentFrame();
-                    this.sceneShaderProgram.setUniform("jointsMatrix", frame.getJointMatrices());
-                }
-
-            });
-        }
+        this.renderNonInstancedMeshes(scene, false, this.sceneShaderProgram, viewMatrix, lightViewMatrix);
+        this.renderInstancedMeshes(scene, false, this.sceneShaderProgram, viewMatrix, lightViewMatrix);
 
         this.sceneShaderProgram.unbind();
     }
@@ -272,7 +264,7 @@ public class Renderer {
                 Mesh mesh = gameItem.getMesh();
 
                 //Set ortotaphic and model matrix for this HUD item
-                Matrix4f projModelMatrix = this.transformation.buildOrtoProjModelMatrix(gameItem, ortho);
+                Matrix4f projModelMatrix = this.transformation.buildOrthoProjModelMatrix(gameItem, ortho);
                 this.hudShaderProgram.setUniform("projModelMatrix", projModelMatrix);
                 this.hudShaderProgram.setUniform("colour", gameItem.getMesh().getMaterial().getAmbientColour());
                 this.hudShaderProgram.setUniform("hasTexture", gameItem.getMesh().getMaterial().isTextured() ? 1 : 0);
@@ -304,9 +296,14 @@ public class Renderer {
             viewMatrix.m31(0);
             float m32 = viewMatrix.m32();
             viewMatrix.m32(0);
+
+            Mesh mesh = skyBox.getMesh();
             Matrix4f modelViewMatrix = this.transformation.buildModelViewMatrix(skyBox, viewMatrix);
             this.skyBoxShaderProgram.setUniform("modelViewMatrix", modelViewMatrix);
             this.skyBoxShaderProgram.setUniform("ambientLight", scene.getSceneLight().getAmbientLight());
+            this.skyBoxShaderProgram.setUniform("colour", mesh.getMaterial().getAmbientColour());
+            this.skyBoxShaderProgram.setUniform("hasTexture", mesh.getMaterial().isTextured() ? 1 : 0);
+            mesh.render();
 
             scene.getSkyBox().getMesh().render();
 
@@ -319,45 +316,34 @@ public class Renderer {
     }
 
     private void renderDepthMap(Window window, Camera camera, Scene scene) {
-        //Setup View Port to match the Texture size
-        glBindFramebuffer(GL_FRAMEBUFFER, this.shadowMap.getDepthMapFBO());
-        glViewport(0, 0, ShadowMap.SHADOW_MAP_WIDTH, ShadowMap.SHADOW_MAP_HEIGHT);
-        glClear(GL_DEPTH_BUFFER_BIT);
+        if (scene.isRenderShadows()) {
+            //Setup View Port to match the Texture size
+            glBindFramebuffer(GL_FRAMEBUFFER, this.shadowMap.getDepthMapFBO());
+            glViewport(0, 0, ShadowMap.SHADOW_MAP_WIDTH, ShadowMap.SHADOW_MAP_HEIGHT);
+            glClear(GL_DEPTH_BUFFER_BIT);
 
-        this.depthShaderProgram.bind();
+            this.depthShaderProgram.bind();
 
-        DirectionalLight directionalLight = scene.getSceneLight().getDirectionalLight();
-        Vector3f lightDirection = directionalLight.getDirection();
+            DirectionalLight directionalLight = scene.getSceneLight().getDirectionalLight();
+            Vector3f lightDirection = directionalLight.getDirection();
 
-        float lightAngleX = (float) Math.toDegrees(Math.acos(lightDirection.z));
-        float lightAngleY = (float) Math.toDegrees(Math.asin(lightDirection.x));
-        float lightAngleZ = 0;
+            float lightAngleX = (float) Math.toDegrees(Math.acos(lightDirection.z));
+            float lightAngleY = (float) Math.toDegrees(Math.asin(lightDirection.x));
+            float lightAngleZ = 0;
 
-        Matrix4f lightViewMatrix = this.transformation.updateLightViewMatrix(
-                new Vector3f(lightDirection).mul(directionalLight.getShadowPosMult()),
-                new Vector3f(lightAngleX, lightAngleY, lightAngleZ));
-        OrthoCoords orthoCoords = directionalLight.getOrthoCoords();
-        Matrix4f orthoProjectionMatrix = this.transformation.updateOrthoProjectionMatrix(orthoCoords.left, orthoCoords.right, orthoCoords.bottom, orthoCoords.top, orthoCoords.near, orthoCoords.far);
-        this.depthShaderProgram.setUniform("orthoProjectionMatrix", orthoProjectionMatrix);
+            Matrix4f lightViewMatrix = this.transformation.updateLightViewMatrix(new Vector3f(lightDirection).mul(directionalLight.getShadowPosMult()), new Vector3f(lightAngleX, lightAngleY, lightAngleZ));
+            OrthoCoords orthoCoords = directionalLight.getOrthoCoords();
+            Matrix4f orthoProjectionMatrix = this.transformation.updateOrthoProjectionMatrix(orthoCoords.left, orthoCoords.right, orthoCoords.bottom, orthoCoords.top, orthoCoords.near, orthoCoords.far);
+            this.depthShaderProgram.setUniform("orthoProjectionMatrix", orthoProjectionMatrix);
 
-        scene.getMeshMap().forEach((mesh, gameItems) -> {
-            mesh.renderList(gameItems, gameItem -> {
-                Matrix4f modelLightViewMatrix = this.transformation.buildModelViewMatrix(gameItem, lightViewMatrix);
-                this.depthShaderProgram.setUniform("modelLightViewMatrix", modelLightViewMatrix);
+            this.renderNonInstancedMeshes(scene, true, this.depthShaderProgram, null, lightViewMatrix);
 
-                if (gameItem instanceof AnimatedGameItem) {
-                    AnimatedGameItem animatedGameItem = (AnimatedGameItem) gameItem;
-                    AnimatedFrame frame = animatedGameItem.getCurrentFrame();
-                    this.sceneShaderProgram.setUniform("jointsMatrix", frame.getJointMatrices());
-                }
+            this.renderInstancedMeshes(scene, true, this.depthShaderProgram, null, lightViewMatrix);
 
-            });
-        });
-
-        //Unbind
-        this.depthShaderProgram.unbind();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+            //Unbind
+            this.depthShaderProgram.unbind();
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
     }
 
     private void renderParticles(Window window, Camera camera, Scene scene) {
@@ -406,6 +392,52 @@ public class Renderer {
         glDepthMask(true);
 
         this.particlesShaderProgram.unbind();
+    }
+
+    private void renderNonInstancedMeshes(Scene scene, boolean depthMap, ShaderProgram shader, Matrix4f viewMatrix, Matrix4f lightViewMatrix) {
+        sceneShaderProgram.setUniform("isInstanced", 0);
+
+        // Render each mesh with the associated game Items
+        Map<Mesh, List<GameItem>> mapMeshes = scene.getMeshMap();
+        for (Mesh mesh : mapMeshes.keySet()) {
+            if (!depthMap) {
+                shader.setUniform("material", mesh.getMaterial());
+                glActiveTexture(GL_TEXTURE2);
+                glBindTexture(GL_TEXTURE_2D, shadowMap.getDepthMap().getId());
+            }
+
+            mesh.renderList(mapMeshes.get(mesh), (GameItem gameItem) -> {
+                        Matrix4f modelMatrix = transformation.buildModelMatrix(gameItem);
+                        if (!depthMap) {
+                            Matrix4f modelViewMatrix = transformation.buildModelViewMatrix(modelMatrix, viewMatrix);
+                            sceneShaderProgram.setUniform("modelViewNonInstancedMatrix", modelViewMatrix);
+                        }
+                        Matrix4f modelLightViewMatrix = transformation.buildModelLightViewMatrix(modelMatrix, lightViewMatrix);
+                        sceneShaderProgram.setUniform("modelLightViewNonInstancedMatrix", modelLightViewMatrix);
+
+                        if (gameItem instanceof AnimatedGameItem) {
+                            AnimatedGameItem animGameItem = (AnimatedGameItem) gameItem;
+                            AnimatedFrame frame = animGameItem.getCurrentFrame();
+                            shader.setUniform("jointsMatrix", frame.getJointMatrices());
+                        }
+                    }
+            );
+        }
+    }
+
+    private void renderInstancedMeshes(Scene scene, boolean depthMap, ShaderProgram shader, Matrix4f viewMatrix, Matrix4f lightViewMatrix) {
+        shader.setUniform("isInstanced", 1);
+
+        // Render each mesh with the associated game Items
+        Map<InstancedMesh, List<GameItem>> mapMeshes = scene.getInstancedMeshMap();
+        for (InstancedMesh mesh : mapMeshes.keySet()) {
+            if (!depthMap) {
+                shader.setUniform("material", mesh.getMaterial());
+                glActiveTexture(GL_TEXTURE2);
+                glBindTexture(GL_TEXTURE_2D, shadowMap.getDepthMap().getId());
+            }
+            mesh.renderListInstanced(mapMeshes.get(mesh), depthMap, transformation, viewMatrix, lightViewMatrix);
+        }
     }
 
     public void cleanUp() {

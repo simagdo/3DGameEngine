@@ -12,6 +12,9 @@ public class GameEngine implements Runnable {
     private final Timer timer;
     private final IGameLogic gameLogic;
     private final MouseInput mouseInput;
+    private double lastFPS;
+    private int fps;
+    private String windowTitle;
 
     public GameEngine() {
         this.window = null;
@@ -26,6 +29,7 @@ public class GameEngine implements Runnable {
     }
 
     public GameEngine(String windowTitle, int width, int height, boolean vSync, WindowOptions windowOptions, IGameLogic gameLogic) throws Exception {
+        this.windowTitle = windowTitle;
         this.gameLoopThread = new Thread(this, "GAME_LOOP_THREAD");
         this.window = new Window(windowTitle, width, height, vSync, windowOptions);
         this.gameLogic = gameLogic;
@@ -59,6 +63,8 @@ public class GameEngine implements Runnable {
         this.timer.init();
         this.mouseInput.init(this.window);
         this.gameLogic.init(this.window);
+        this.lastFPS = this.timer.getTime();
+        this.fps = 0;
     }
 
     protected void gameLoop() {
@@ -107,6 +113,12 @@ public class GameEngine implements Runnable {
     }
 
     protected void render() {
+        if (this.window.getWindowOptions().showFPS && this.timer.getLastLoopTime() - this.lastFPS > 1) {
+            this.lastFPS = this.timer.getLastLoopTime();
+            this.window.setWindowTitle(this.windowTitle + " - " + this.fps + " FPS");
+            this.fps = 0;
+        }
+        fps++;
         this.gameLogic.render(this.window);
         this.window.update();
     }

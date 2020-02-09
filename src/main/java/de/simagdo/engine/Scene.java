@@ -1,5 +1,6 @@
 package de.simagdo.engine;
 
+import de.simagdo.engine.graph.InstancedMesh;
 import de.simagdo.engine.graph.Mesh;
 import de.simagdo.engine.graph.particles.IParticleEmitter;
 import de.simagdo.engine.graph.weather.Fog;
@@ -14,14 +15,18 @@ import java.util.Map;
 public class Scene {
 
     private Map<Mesh, List<GameItem>> meshMap;
+    private final Map<InstancedMesh, List<GameItem>> instancedMeshMap;
     private SkyBox skyBox;
     private SceneLight sceneLight;
     private Fog fog;
     private IParticleEmitter[] iParticleEmitters;
+    private boolean renderShadows;
 
     public Scene() {
         this.meshMap = new HashMap<>();
+        this.instancedMeshMap = new HashMap<>();
         this.fog = Fog.NOFOG;
+        this.renderShadows = true;
     }
 
     public Map<Mesh, List<GameItem>> getMeshMap() {
@@ -33,7 +38,13 @@ public class Scene {
         for (GameItem gameItem : gameItems) {
             Mesh[] meshes = gameItem.getMeshes();
             for (Mesh mesh : meshes) {
-                List<GameItem> list = meshMap.computeIfAbsent(mesh, key -> new ArrayList<>());
+                boolean instancedMesh = mesh instanceof InstancedMesh;
+                List<GameItem> list = instancedMesh ? this.instancedMeshMap.get(mesh) : this.meshMap.get(mesh);
+                if (list == null) {
+                    list = new ArrayList<>();
+                    if (instancedMesh) this.instancedMeshMap.put((InstancedMesh) mesh, list);
+                    else this.meshMap.put(mesh, list);
+                }
                 list.add(gameItem);
             }
         }
@@ -59,6 +70,10 @@ public class Scene {
         this.meshMap = meshMap;
     }
 
+    public Map<InstancedMesh, List<GameItem>> getInstancedMeshMap() {
+        return instancedMeshMap;
+    }
+
     public Fog getFog() {
         return fog;
     }
@@ -75,9 +90,18 @@ public class Scene {
         this.iParticleEmitters = iParticleEmitters;
     }
 
+    public boolean isRenderShadows() {
+        return renderShadows;
+    }
+
+    public void setRenderShadows(boolean renderShadows) {
+        this.renderShadows = renderShadows;
+    }
+
     public void cleanUp() {
-        for (Mesh mesh : this.meshMap.keySet()) mesh.cleanUp();
-        for (IParticleEmitter particleEmitter : this.getParticleEmitters()) particleEmitter.cleanUp();
+        for (Mesh mesh : this.instancedMeshMap.keySet()) mesh.cleanUp();
+        if (this.iParticleEmitters != null)
+            for (IParticleEmitter particleEmitter : this.getParticleEmitters()) particleEmitter.cleanUp();
     }
 
 }

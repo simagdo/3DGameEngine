@@ -27,8 +27,7 @@ public class Particle extends GameItem {
         super(baseParticle.getMesh());
         Vector3f aux = baseParticle.getPosition();
         this.setPosition(aux.x, aux.y, aux.z);
-        aux = baseParticle.getRotation();
-        this.setRotation(aux.x, aux.y, aux.z);
+        this.setRotation(baseParticle.getRotation());
         this.setScale(baseParticle.getScale());
         this.speed = new Vector3f(baseParticle.getSpeed());
         this.timeToLive = baseParticle.getTimeToLive();

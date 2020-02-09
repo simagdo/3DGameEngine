@@ -160,6 +160,30 @@ public class Window {
         this.vSync = vSync;
     }
 
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public void setWindowHandle(long windowHandle) {
+        this.windowHandle = windowHandle;
+    }
+
+    public WindowOptions getWindowOptions() {
+        return windowOptions;
+    }
+
+    public void setWindowOptions(WindowOptions windowOptions) {
+        this.windowOptions = windowOptions;
+    }
+
+    public void setWindowTitle(String title) {
+        glfwSetWindowTitle(this.windowHandle, title);
+    }
+
     public void update() {
         glfwSwapBuffers(this.windowHandle);
         glfwPollEvents();
