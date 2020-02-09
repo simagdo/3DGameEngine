@@ -15,11 +15,16 @@ import de.simagdo.engine.loaders.md5.MD5AnimModel;
 import de.simagdo.engine.loaders.md5.MD5Loader;
 import de.simagdo.engine.loaders.md5.MD5Model;
 import de.simagdo.engine.loaders.obj.OBJLoader;
+import de.simagdo.engine.sound.SoundBuffer;
+import de.simagdo.engine.sound.SoundListener;
+import de.simagdo.engine.sound.SoundManager;
+import de.simagdo.engine.sound.SoundSource;
 import de.simagdo.engine.window.Window;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.lwjgl.openal.AL11;
 import org.lwjgl.system.MemoryStack;
 
 import java.io.File;
@@ -46,6 +51,13 @@ public class DummyGame implements IGameLogic {
     private float angleInc;
     private Terrain terrain;
     private FlowParticleEmitter particleEmitter;
+    private SoundManager soundManager;
+
+    private enum Sounds {
+        MUSIC,
+        BEEP,
+        FIRE
+    }
 
     public DummyGame() {
         this.renderer = new Renderer();
@@ -53,6 +65,7 @@ public class DummyGame implements IGameLogic {
         this.cameraInc = new Vector3f(0.0f, 0.0f, 0.0f);
         this.angleInc = 0;
         this.lightAngle = 45;
+        this.soundManager = new SoundManager();
     }
 
     @Override
@@ -60,6 +73,7 @@ public class DummyGame implements IGameLogic {
         this.renderer.init(window);
 
         this.scene = new Scene();
+        this.soundManager.init();
 
         float reflectance = 1f;
 
@@ -149,9 +163,13 @@ public class DummyGame implements IGameLogic {
         this.scene.setFog(new Fog(true, fogColour, 0.02f));
 
         // Setup  SkyBox
-        SkyBox skyBox = new SkyBox("/models/skybox.obj", new Vector4f(0.65f, 0.65f, 0.65f, 1.0f));
+        SkyBox skyBox = new SkyBox("/models/skybox.obj", new Vector4f(0.65f, 0.65f, 0.65f, 10.0f));
         skyBox.setScale(skyBoxScale);
         this.scene.setSkyBox(skyBox);
+
+        //Sounds
+        this.soundManager.setAttenuationModel(AL11.AL_EXPONENT_DISTANCE);
+        this.setupSounds();
 
         //Setup Lights
         this.setupLights();
@@ -183,6 +201,35 @@ public class DummyGame implements IGameLogic {
         sceneLight.setDirectionalLight(directionalLight);
     }
 
+    private void setupSounds() throws Exception {
+
+        SoundBuffer buffBack = new SoundBuffer("/sounds/background.ogg");
+        this.soundManager.addSoundBuffer(buffBack);
+        SoundSource sourceBack = new SoundSource(true, true);
+        sourceBack.setBuffer(buffBack.getBufferId());
+        this.soundManager.addSoundSource(Sounds.MUSIC.toString(), sourceBack);
+
+        SoundBuffer buffBeep = new SoundBuffer("/sounds/beep.ogg");
+        this.soundManager.addSoundBuffer(buffBeep);
+        SoundSource sourceBeep = new SoundSource(false, true);
+        sourceBeep.setBuffer(buffBeep.getBufferId());
+        this.soundManager.addSoundSource(Sounds.BEEP.toString(), sourceBeep);
+
+        SoundBuffer buffFire = new SoundBuffer("/sounds/fire.ogg");
+        this.soundManager.addSoundBuffer(buffFire);
+        SoundSource sourceFire = new SoundSource(true, false);
+        Vector3f pos = particleEmitter.getBaseParticle().getPosition();
+        sourceFire.setPosition(pos);
+        sourceFire.setBuffer(buffFire.getBufferId());
+        this.soundManager.addSoundSource(Sounds.FIRE.toString(), sourceFire);
+        sourceFire.play();
+
+        this.soundManager.setListener(new SoundListener(new Vector3f(0, 0, 0)));
+
+        sourceBack.play();
+
+    }
+
     @Override
     public void input(Window window, MouseInput mouseInput) {
         this.cameraInc.set(0, 0, 0);
@@ -203,8 +250,10 @@ public class DummyGame implements IGameLogic {
         }
         if (window.isKeyPressed(GLFW_KEY_LEFT)) {
             this.angleInc -= 0.05f;
+            this.soundManager.playSoundSource(Sounds.BEEP.toString());
         } else if (window.isKeyPressed(GLFW_KEY_RIGHT)) {
             this.angleInc += 0.05f;
+            this.soundManager.playSoundSource(Sounds.FIRE.toString());
         } else {
             this.angleInc = 0;
         }
@@ -242,18 +291,22 @@ public class DummyGame implements IGameLogic {
         this.hud.setStatusText("X: " + this.camera.getPosition().x + ", Y: " + this.camera.getPosition().y + ", Z: " + this.camera.getPosition().z + ", RotX: " + this.camera.getRotation().x + ", RotY: " + this.camera.getRotation().y + ", RotZ: " + this.camera.getRotation().z);
 
         this.particleEmitter.update((long) (interval * 1000));
+
+        //Update sound listener position
+        this.soundManager.updateListenerPosition(camera);
     }
 
     @Override
     public void render(Window window) {
         if (this.hud != null)
             this.hud.updateSize(window);
-        renderer.render(window, this.camera, this.scene, this.hud);
+        this.renderer.render(window, this.camera, this.scene, this.hud);
     }
 
     @Override
     public void cleanUp() {
-        renderer.cleanUp();
+        this.renderer.cleanUp();
+        this.soundManager.cleanup();
         for (Mesh mesh : scene.getMeshMap().keySet()) mesh.cleanUp();
         if (this.hud != null)
             this.hud.cleanUp();

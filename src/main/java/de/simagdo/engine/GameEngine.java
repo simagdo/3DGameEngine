@@ -16,14 +16,6 @@ public class GameEngine implements Runnable {
     private int fps;
     private String windowTitle;
 
-    public GameEngine() {
-        this.window = null;
-        this.gameLoopThread = null;
-        this.timer = null;
-        this.gameLogic = null;
-        this.mouseInput = null;
-    }
-
     public GameEngine(String windowTitle, boolean vSync, WindowOptions windowOptions, IGameLogic gameLogic) throws Exception {
         this(windowTitle, 0, 0, vSync, windowOptions, gameLogic);
     }
