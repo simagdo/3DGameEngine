@@ -36,6 +36,7 @@ public class DummyGame implements IGameLogic {
     private float lightAngle;
     private float angleInc;
     private Terrain terrain;
+    private FlowParticleEmitter particleEmitter;
 
     public DummyGame() {
         this.renderer = new Renderer();
@@ -51,6 +52,18 @@ public class DummyGame implements IGameLogic {
 
         this.scene = new Scene();
 
+        float reflectance = 1f;
+
+        // Setup  GameItems
+        int maxParticles = 200;
+        /*Mesh quadMesh = OBJLoader.loadMesh("/models/plane.obj");
+        Material quadMaterial = new Material(new Vector4f(0.0f, 0.0f, 1.0f, 1.0f), reflectance);
+        quadMesh.setMaterial(quadMaterial);
+        GameItem quadGameItem = new GameItem(quadMesh);
+        quadGameItem.setPosition(0, 0, 0);
+        quadGameItem.setScale(2.5f);
+
+        scene.setGameItems(new GameItem[]{quadGameItem});*/
         //Setup GameItems
         float blockScale = 0.5f;
         float skyBoxScale = 50.0f;
@@ -70,7 +83,6 @@ public class DummyGame implements IGameLogic {
 
         GameItem[] gameItems = new GameItem[NUM_ROWS * NUM_COLS];
 
-        float reflectance = 1f;
         int instances = NUM_ROWS * NUM_COLS;
         Mesh mesh = OBJLoader.loadMesh("/models/cube.obj", instances);
         Texture texture = new Texture("/textures/grassblock.png");
@@ -89,19 +101,29 @@ public class DummyGame implements IGameLogic {
             posX = startX;
             posZ -= inc;
         }
-
         this.scene.setGameItems(gameItems);
 
-        this.scene.setRenderShadows(false);
+        Vector3f particleSpeed = new Vector3f(0, 1, 0);
+        particleSpeed.mul(2.5f);
+        long ttl = 4000;
+        long creationPeriodMillis = 300;
+        float range = 0.2f;
+        float scale = 1.0f;
+        Mesh partMesh = OBJLoader.loadMesh("/models/particle.obj", maxParticles);
+        texture = new Texture("/textures/particle_anim.png", 4, 4);
+        Material partMaterial = new Material(texture, reflectance);
+        partMesh.setMaterial(partMaterial);
+        Particle particle = new Particle(partMesh, particleSpeed, ttl, 100);
+        particle.setScale(scale);
+        particleEmitter = new FlowParticleEmitter(particle, maxParticles, creationPeriodMillis);
+        particleEmitter.setActive(true);
+        particleEmitter.setPositionRndRange(range);
+        particleEmitter.setSpeedRndRange(range);
+        particleEmitter.setAnimRange(10);
+        this.scene.setParticleEmitters(new FlowParticleEmitter[]{particleEmitter});
 
-        //Fog
-        Vector3f fogColour = new Vector3f(0.5f, 0.5f, 0.5f);
-        this.scene.setFog(new Fog(true, fogColour, 0.05f));
-
-        //Setup SkyBox
-        SkyBox skyBox = new SkyBox("/models/skybox.obj", new Vector4f(0.65f, 0.65f, 0.65f, 1.0f));
-        skyBox.setScale(skyBoxScale);
-        this.scene.setSkyBox(skyBox);
+        // Shadows
+        scene.setRenderShadows(false);
 
         //Setup Lights
         this.setupLights();
@@ -190,6 +212,8 @@ public class DummyGame implements IGameLogic {
         lightDirection.y = yValue;
         lightDirection.z = zValue;
         this.hud.setStatusText("X: " + this.camera.getPosition().x + ", Y: " + this.camera.getPosition().y + ", Z: " + this.camera.getPosition().z + ", RotX: " + this.camera.getRotation().x + ", RotY: " + this.camera.getRotation().y + ", RotZ: " + this.camera.getRotation().z);
+
+        this.particleEmitter.update((long) (interval * 1000));
     }
 
     @Override

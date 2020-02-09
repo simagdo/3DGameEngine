@@ -10,6 +10,7 @@ layout (location=3) in vec4 jointWeights;
 layout (location=4) in ivec4 jointIndices;
 layout (location=5) in mat4 modelViewInstancedMatrix;
 layout (location=9) in mat4 modelLightViewInstancedMatrix;
+layout (location=13) in vec2 texOffset;
 
 out vec2 outTexCoord;
 out vec3 mvVertexNormal;
@@ -23,6 +24,9 @@ uniform mat4 jointsMatrix[MAX_JOINTS];
 uniform mat4 projectionMatrix;
 uniform mat4 modelLightViewNonInstancedMatrix;
 uniform mat4 orthoProjectionMatrix;
+
+uniform int numCols;
+uniform int numRows;
 
 void main()
 {
@@ -65,7 +69,12 @@ void main()
     }
     vec4 mvPos = modelViewMatrix * initPos;
     gl_Position = projectionMatrix * mvPos;
-    outTexCoord = texCoord;
+
+    // Support for texture atlas, update texture coordinates
+    float x = (texCoord.x / numCols + texOffset.x);
+    float y = (texCoord.y / numRows + texOffset.y);
+    outTexCoord = vec2(x, y);
+
     mvVertexNormal = normalize(modelViewMatrix * initNormal).xyz;
     mvVertexPos = mvPos.xyz;
     mlightviewVertexPos = orthoProjectionMatrix * lightViewMatrix * initPos;
