@@ -25,16 +25,16 @@ public class HeightMapMesh {
     private final Mesh mesh;
     private final float[][] heightArray;
 
-    public HeightMapMesh(float minY, float maxY, ByteBuffer heightMapImage,int width,int height, String textureFile, int textInc) throws Exception {
+    public HeightMapMesh(float minY, float maxY, ByteBuffer heightMapImage, int width, int height, String textureFile, int textInc) throws Exception {
         this.minY = minY;
         this.maxY = maxY;
-        this.heightArray=new  float[width][height];
+        this.heightArray = new float[width][height];
         Texture texture = new Texture(textureFile);
-        float incX = getXLength()/(width-1);
-        float incZ = getZLength()/(height-1);
-        List<Float>positions=new ArrayList<>();
-        List<Float>textCoords=new ArrayList<>();
-        List<Integer>indices=new ArrayList<>();
+        float incX = getXLength() / (width - 1);
+        float incZ = getZLength() / (height - 1);
+        List<Float> positions = new ArrayList<>();
+        List<Float> textCoords = new ArrayList<>();
+        List<Integer> indices = new ArrayList<>();
 
         for (int row = 0; row < height; row++) {
             for (int col = 0; col < width; col++) {
@@ -168,13 +168,16 @@ public class HeightMapMesh {
     }
 
     private float getHeight(int x, int z, int width, ByteBuffer buffer) {
-        byte r = buffer.get(x * 4 + z * 4 * width);
+        int argb = getRGB(x,z,width,buffer);
+        return this.minY + Math.abs(this.maxY - this.minY) * ((float) argb / (float) MAX_COLOUR);
+    }
+
+    public static int getRGB(int x, int z, int width, ByteBuffer buffer) {
+        byte r = buffer.get(x * 4 + 0 + z * 4 * width);
         byte g = buffer.get(x * 4 + 1 + z * 4 * width);
         byte b = buffer.get(x * 4 + 2 + z * 4 * width);
         byte a = buffer.get(x * 4 + 3 + z * 4 * width);
-        int argb = ((0xFF & a) << 24) | ((0xFF & r) << 16)
-                | ((0xFF & g) << 8) | (0xFF & b);
-        return this.minY + Math.abs(this.maxY - this.minY) * ((float) argb / (float) MAX_COLOUR);
+        return ((0xFF & a) << 24) | ((0xFF & r) << 16) | ((0xFF & g) << 8) | (0xFF & b);
     }
 
 }

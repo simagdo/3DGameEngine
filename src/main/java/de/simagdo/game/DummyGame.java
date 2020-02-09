@@ -20,8 +20,17 @@ import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.lwjgl.system.MemoryStack;
+
+import java.io.File;
+import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.nio.file.Paths;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.stb.STBImage.stbi_failure_reason;
+import static org.lwjgl.stb.STBImage.stbi_load;
 
 public class DummyGame implements IGameLogic {
 
@@ -54,55 +63,65 @@ public class DummyGame implements IGameLogic {
 
         float reflectance = 1f;
 
-        // Setup  GameItems
-        int maxParticles = 200;
-        /*Mesh quadMesh = OBJLoader.loadMesh("/models/plane.obj");
-        Material quadMaterial = new Material(new Vector4f(0.0f, 0.0f, 1.0f, 1.0f), reflectance);
-        quadMesh.setMaterial(quadMaterial);
-        GameItem quadGameItem = new GameItem(quadMesh);
-        quadGameItem.setPosition(0, 0, 0);
-        quadGameItem.setScale(2.5f);
-
-        scene.setGameItems(new GameItem[]{quadGameItem});*/
-        //Setup GameItems
         float blockScale = 0.5f;
-        float skyBoxScale = 50.0f;
+        float skyBoxScale = 100.0f;
         float extension = 2.0f;
 
-        float startX = extension * (-skyBoxScale + blockScale);
-        float startY = -1.0f;
-        float startZ = extension * (skyBoxScale - blockScale);
+        float startx = extension * (-skyBoxScale + blockScale);
+        float startz = extension * (skyBoxScale - blockScale);
+        float starty = -1.0f;
         float inc = blockScale * 2;
 
-        float posX = startX;
-        float posZ = startZ;
-        float incY;
+        float posx = startx;
+        float posz = startz;
+        float incy = 0.0f;
 
-        int NUM_ROWS = (int) (extension * skyBoxScale * 2 / inc);
-        int NUM_COLS = (int) (extension * skyBoxScale * 2 / inc);
+        ByteBuffer buf;
+        int width;
+        int height;
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer w = stack.mallocInt(1);
+            IntBuffer h = stack.mallocInt(1);
+            IntBuffer channels = stack.mallocInt(1);
 
-        GameItem[] gameItems = new GameItem[NUM_ROWS * NUM_COLS];
+            URL url = Texture.class.getResource("/textures/heightmap.png");
+            File file = Paths.get(url.toURI()).toFile();
+            String filePath = file.getAbsolutePath();
+            buf = stbi_load(filePath, w, h, channels, 4);
+            if (buf == null) {
+                throw new Exception("Image file not loaded: " + stbi_failure_reason());
+            }
 
-        int instances = NUM_ROWS * NUM_COLS;
+            width = w.get();
+            height = h.get();
+        }
+
+        int instances = height * width;
         Mesh mesh = OBJLoader.loadMesh("/models/cube.obj", instances);
-        Texture texture = new Texture("/textures/grassblock.png");
+        Texture texture = new Texture("/textures/terrain_textures.png", 2, 1);
         Material material = new Material(texture, reflectance);
         mesh.setMaterial(material);
-
-        for (int i = 0; i < NUM_ROWS; i++) {
-            for (int j = 0; j < NUM_COLS; j++) {
+        GameItem[] gameItems = new GameItem[instances];
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
                 GameItem gameItem = new GameItem(mesh);
                 gameItem.setScale(blockScale);
-                incY = Math.random() > 0.9f ? blockScale * 2 : 0f;
-                gameItem.setPosition(posX, startY + incY, posZ);
-                gameItems[i * NUM_COLS + j] = gameItem;
-                posX += inc;
+                int rgb = HeightMapMesh.getRGB(i, j, width, buf);
+                incy = rgb / (10 * 255 * 255);
+                gameItem.setPosition(posx, starty + incy, posz);
+                int textPos = Math.random() > 0.5f ? 0 : 1;
+                gameItem.setTextPos(textPos);
+                gameItems[i * width + j] = gameItem;
+
+                posx += inc;
             }
-            posX = startX;
-            posZ -= inc;
+            posx = startx;
+            posz -= inc;
         }
         this.scene.setGameItems(gameItems);
 
+        // Particles
+        int maxParticles = 200;
         Vector3f particleSpeed = new Vector3f(0, 1, 0);
         particleSpeed.mul(2.5f);
         long ttl = 4000;
@@ -110,20 +129,29 @@ public class DummyGame implements IGameLogic {
         float range = 0.2f;
         float scale = 1.0f;
         Mesh partMesh = OBJLoader.loadMesh("/models/particle.obj", maxParticles);
-        texture = new Texture("/textures/particle_anim.png", 4, 4);
-        Material partMaterial = new Material(texture, reflectance);
+        Texture particleTexture = new Texture("/textures/particle_anim.png", 4, 4);
+        Material partMaterial = new Material(particleTexture, reflectance);
         partMesh.setMaterial(partMaterial);
         Particle particle = new Particle(partMesh, particleSpeed, ttl, 100);
         particle.setScale(scale);
-        particleEmitter = new FlowParticleEmitter(particle, maxParticles, creationPeriodMillis);
-        particleEmitter.setActive(true);
-        particleEmitter.setPositionRndRange(range);
-        particleEmitter.setSpeedRndRange(range);
-        particleEmitter.setAnimRange(10);
-        this.scene.setParticleEmitters(new FlowParticleEmitter[]{particleEmitter});
+        this.particleEmitter = new FlowParticleEmitter(particle, maxParticles, creationPeriodMillis);
+        this.particleEmitter.setActive(true);
+        this.particleEmitter.setPositionRndRange(range);
+        this.particleEmitter.setSpeedRndRange(range);
+        this.particleEmitter.setAnimRange(10);
+        this.scene.setParticleEmitters(new FlowParticleEmitter[]{this.particleEmitter});
 
         // Shadows
-        scene.setRenderShadows(false);
+        this.scene.setRenderShadows(false);
+
+        // Fog
+        Vector3f fogColour = new Vector3f(0.5f, 0.5f, 0.5f);
+        this.scene.setFog(new Fog(true, fogColour, 0.02f));
+
+        // Setup  SkyBox
+        SkyBox skyBox = new SkyBox("/models/skybox.obj", new Vector4f(0.65f, 0.65f, 0.65f, 1.0f));
+        skyBox.setScale(skyBoxScale);
+        this.scene.setSkyBox(skyBox);
 
         //Setup Lights
         this.setupLights();
