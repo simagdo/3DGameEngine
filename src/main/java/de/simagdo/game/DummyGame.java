@@ -52,6 +52,7 @@ public class DummyGame implements IGameLogic {
     private Terrain terrain;
     private FlowParticleEmitter particleEmitter;
     private SoundManager soundManager;
+    private CameraBoxSelectionDetector selectionDetector;
 
     private enum Sounds {
         MUSIC,
@@ -66,6 +67,7 @@ public class DummyGame implements IGameLogic {
         this.angleInc = 0;
         this.lightAngle = 45;
         this.soundManager = new SoundManager();
+        this.selectionDetector = new CameraBoxSelectionDetector();
     }
 
     @Override
@@ -115,7 +117,7 @@ public class DummyGame implements IGameLogic {
         Texture texture = new Texture("/textures/terrain_textures.png", 2, 1);
         Material material = new Material(texture, reflectance);
         mesh.setMaterial(material);
-        GameItem[] gameItems = new GameItem[instances];
+        this.gameItems = new GameItem[instances];
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 GameItem gameItem = new GameItem(mesh);
@@ -163,7 +165,7 @@ public class DummyGame implements IGameLogic {
         this.scene.setFog(new Fog(true, fogColour, 0.02f));
 
         // Setup  SkyBox
-        SkyBox skyBox = new SkyBox("/models/skybox.obj", new Vector4f(0.65f, 0.65f, 0.65f, 10.0f));
+        SkyBox skyBox = new SkyBox("/models/skybox.obj", new Vector4f(0.65f, 0.65f, 0.65f, 1.0f));
         skyBox.setScale(skyBoxScale);
         this.scene.setSkyBox(skyBox);
 
@@ -292,8 +294,13 @@ public class DummyGame implements IGameLogic {
 
         this.particleEmitter.update((long) (interval * 1000));
 
+        //Update View Matrix
+        this.camera.updateViewMatrix();
+
         //Update sound listener position
         this.soundManager.updateListenerPosition(camera);
+
+        this.selectionDetector.selectGameItem(this.gameItems, this.camera);
     }
 
     @Override

@@ -12,6 +12,7 @@ import de.simagdo.engine.graph.text.Texture;
 import de.simagdo.engine.items.GameItem;
 import de.simagdo.engine.items.SkyBox;
 import de.simagdo.engine.window.Window;
+import de.simagdo.engine.window.WindowOptions;
 import de.simagdo.utils.Utils;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -94,6 +95,8 @@ public class Renderer {
         this.sceneShaderProgram.createUniform("numCols");
         this.sceneShaderProgram.createUniform("numRows");
 
+        this.sceneShaderProgram.createUniform("selectedNonInstanced");
+
     }
 
     private void setupHudShader() throws Exception {
@@ -162,7 +165,6 @@ public class Renderer {
 
         //Update Projection and View Atrices once per render cycle
         this.transformation.updateProjectionMatrix(FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
-        this.transformation.updateViewMatrix(camera);
 
         //Render Scene
         this.renderScene(window, camera, scene);
@@ -175,6 +177,9 @@ public class Renderer {
 
         //Render HUD
         this.renderHud(window, hud);
+
+        //Render Cross Hair
+        this.renderCrossHair(window);
     }
 
     private void renderScene(Window window, Camera camera, Scene scene) {
@@ -188,7 +193,7 @@ public class Renderer {
         Matrix4f lightViewMatrix = this.transformation.getLightViewMatrix();
 
         // Update view Matrix
-        Matrix4f viewMatrix = transformation.getViewMatrix();
+        Matrix4f viewMatrix = camera.getViewMatrix();
 
         //Update Light Uniforms
         this.renderLights(viewMatrix, scene.getSceneLight());
@@ -288,7 +293,7 @@ public class Renderer {
             Matrix4f projectionMatrix = this.transformation.getProjectionMatrix();
             this.sceneShaderProgram.setUniform("projectionMatrix", projectionMatrix);
 
-            Matrix4f viewMatrix = this.transformation.getViewMatrix();
+            Matrix4f viewMatrix = camera.getViewMatrix();
             float m30 = viewMatrix.m30();
             viewMatrix.m30(0);
             float m31 = viewMatrix.m31();
@@ -352,7 +357,7 @@ public class Renderer {
         Matrix4f projectionMatrix = this.transformation.getProjectionMatrix();
         this.particlesShaderProgram.setUniform("projectionMatrix", projectionMatrix);
 
-        Matrix4f viewMatrix = this.transformation.getViewMatrix();
+        Matrix4f viewMatrix = camera.getViewMatrix();
         IParticleEmitter[] emitters = scene.getParticleEmitters();
         int numEmitters = emitters != null ? emitters.length : 0;
 
@@ -396,6 +401,7 @@ public class Renderer {
             }
 
             mesh.renderList(mapMeshes.get(mesh), (GameItem gameItem) -> {
+                        this.sceneShaderProgram.setUniform("selectedNonInstanced", gameItem.isSelected() ? 1.0f : 0.0f);
                         Matrix4f modelMatrix = transformation.buildModelMatrix(gameItem);
                         if (viewMatrix != null) {
                             Matrix4f modelViewMatrix = transformation.buildModelViewMatrix(modelMatrix, viewMatrix);
@@ -432,6 +438,70 @@ public class Renderer {
                 glBindTexture(GL_TEXTURE_2D, shadowMap.getDepthMap().getId());
             }
             mesh.renderListInstanced(mapMeshes.get(mesh), transformation, viewMatrix, lightViewMatrix);
+        }
+    }
+
+    private void renderCrossHair(Window window) {
+        if (window.getWindowOptions().compatibleProfile) {
+            glPushMatrix();
+            glLoadIdentity();
+
+            float inc = 0.05f;
+            glLineWidth(2.0f);
+
+            glBegin(GL_LINES);
+
+            glColor3f(1.0f, 1.0f, 1.0f);
+
+            //Horizontal Line
+            glVertex3f(-inc, 0.0f, 0.0f);
+            glVertex3f(+inc, 0.0f, 0.0f);
+            glEnd();
+
+            //Vertical Line
+            glBegin(GL_LINES);
+            glVertex3f(0.0f, -inc, 0.0f);
+            glVertex3f(0.0f, +inc, 0.0f);
+            glEnd();
+
+            glPopMatrix();
+
+        }
+    }
+
+    /**
+     * Renders the three axis in space (For debugging purposes only
+     *
+     * @param camera
+     */
+    private void renderAxes(Window window, Camera camera) {
+        if (window.getWindowOptions().compatibleProfile) {
+            glPushMatrix();
+            glLoadIdentity();
+            float rotX = camera.getRotation().x;
+            float rotY = camera.getRotation().y;
+            float rotZ = 0;
+            glRotatef(rotX, 1.0f, 0.0f, 0.0f);
+            glRotatef(rotY, 0.0f, 1.0f, 0.0f);
+            glRotatef(rotZ, 0.0f, 0.0f, 1.0f);
+            glLineWidth(2.0f);
+
+            glBegin(GL_LINES);
+            // X Axis
+            glColor3f(1.0f, 0.0f, 0.0f);
+            glVertex3f(0.0f, 0.0f, 0.0f);
+            glVertex3f(1.0f, 0.0f, 0.0f);
+            // Y Axis
+            glColor3f(0.0f, 1.0f, 0.0f);
+            glVertex3f(0.0f, 0.0f, 0.0f);
+            glVertex3f(0.0f, 1.0f, 0.0f);
+            // Z Axis
+            glColor3f(1.0f, 1.0f, 1.0f);
+            glVertex3f(0.0f, 0.0f, 0.0f);
+            glVertex3f(0.0f, 0.0f, 1.0f);
+            glEnd();
+
+            glPopMatrix();
         }
     }
 

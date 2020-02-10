@@ -1,15 +1,18 @@
 package de.simagdo.engine.graph;
 
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 public class Camera {
 
     private final Vector3f position;
     private final Vector3f rotation;
+    private Matrix4f viewMatrix;
 
     public Camera() {
         this.position = new Vector3f(0, 0, 0);
         rotation = new Vector3f(0, 0, 0);
+        this.viewMatrix = new Matrix4f();
     }
 
     public Camera(Vector3f position, Vector3f rotation) {
@@ -25,6 +28,18 @@ public class Camera {
         this.position.x = x;
         this.position.y = y;
         this.position.z = z;
+    }
+
+    public Matrix4f getViewMatrix() {
+        return viewMatrix;
+    }
+
+    public void setViewMatrix(Matrix4f viewMatrix) {
+        this.viewMatrix = viewMatrix;
+    }
+
+    public Matrix4f updateViewMatrix() {
+        return Transformation.updateGenericViewMatrix(this.position, this.rotation, this.viewMatrix);
     }
 
     public void movePosition(float offsetX, float offsetY, float offsetZ) {

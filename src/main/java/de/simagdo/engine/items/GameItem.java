@@ -11,12 +11,14 @@ public class GameItem {
     private float scale;
     private final Quaternionf rotation;
     private int textPos;
+    private boolean selected;
 
     public GameItem() {
         this.position = new Vector3f(0, 0, 0);
         this.scale = 1;
         this.rotation = new Quaternionf();
         this.textPos = 0;
+        this.selected = false;
     }
 
     public GameItem(Mesh mesh) {
@@ -77,6 +79,18 @@ public class GameItem {
 
     public void setTextPos(int textPos) {
         this.textPos = textPos;
+    }
+
+    public void setMeshes(Mesh[] meshes) {
+        this.meshes = meshes;
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 
     public void cleanUp() {
