@@ -3,6 +3,7 @@ package de.simagdo.engine.graph;
 import de.simagdo.engine.*;
 import de.simagdo.engine.graph.animation.AnimatedFrame;
 import de.simagdo.engine.graph.animation.AnimatedGameItem;
+import de.simagdo.engine.graph.camera.Camera;
 import de.simagdo.engine.graph.lights.DirectionalLight;
 import de.simagdo.engine.graph.lights.OrthoCoords;
 import de.simagdo.engine.graph.lights.PointLight;
@@ -12,7 +13,6 @@ import de.simagdo.engine.graph.text.Texture;
 import de.simagdo.engine.items.GameItem;
 import de.simagdo.engine.items.SkyBox;
 import de.simagdo.engine.window.Window;
-import de.simagdo.engine.window.WindowOptions;
 import de.simagdo.utils.Utils;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -35,9 +35,6 @@ public class Renderer {
     private ShaderProgram skyBoxShaderProgram;
     private ShaderProgram depthShaderProgram;
     private ShaderProgram particlesShaderProgram;
-    private static final float FOV = (float) Math.toRadians(60.0f);
-    private static final float Z_NEAR = 0.01f;
-    private static final float Z_FAR = 1000.f;
     private Transformation transformation;
     private float specularPower;
     private static final int MAX_POINT_LIGHTS = 5;
@@ -164,7 +161,7 @@ public class Renderer {
         glViewport(0, 0, window.getWidth(), window.getHeight());
 
         //Update Projection and View Atrices once per render cycle
-        this.transformation.updateProjectionMatrix(FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
+        window.updateProjectionMatrix();
 
         //Render Scene
         this.renderScene(window, camera, scene);
@@ -186,7 +183,7 @@ public class Renderer {
         this.sceneShaderProgram.bind();
 
         //Update Projection Matrix
-        Matrix4f projectionMatrix = this.transformation.getProjectionMatrix();
+        Matrix4f projectionMatrix = window.getProjectionMatrix();
         this.sceneShaderProgram.setUniform("projectionMatrix", projectionMatrix);
         Matrix4f orthoProjectionMatrix = this.transformation.getOrthoProjectionMatrix();
         this.sceneShaderProgram.setUniform("orthoProjectionMatrix", orthoProjectionMatrix);
@@ -290,7 +287,7 @@ public class Renderer {
             this.skyBoxShaderProgram.setUniform("texture_sampler", 0);
 
             //Update projection Matrix
-            Matrix4f projectionMatrix = this.transformation.getProjectionMatrix();
+            Matrix4f projectionMatrix = window.getProjectionMatrix();
             this.sceneShaderProgram.setUniform("projectionMatrix", projectionMatrix);
 
             Matrix4f viewMatrix = camera.getViewMatrix();
@@ -354,7 +351,7 @@ public class Renderer {
         this.particlesShaderProgram.bind();
 
         this.particlesShaderProgram.setUniform("texture_sampler", 0);
-        Matrix4f projectionMatrix = this.transformation.getProjectionMatrix();
+        Matrix4f projectionMatrix = window.getProjectionMatrix();
         this.particlesShaderProgram.setUniform("projectionMatrix", projectionMatrix);
 
         Matrix4f viewMatrix = camera.getViewMatrix();

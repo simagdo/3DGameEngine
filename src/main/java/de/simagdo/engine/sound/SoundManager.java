@@ -1,6 +1,6 @@
 package de.simagdo.engine.sound;
 
-import de.simagdo.engine.graph.Camera;
+import de.simagdo.engine.graph.camera.Camera;
 import de.simagdo.engine.graph.Transformation;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;

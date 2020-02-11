@@ -1,4 +1,4 @@
-package de.simagdo.engine.graph;
+package de.simagdo.engine.graph.camera;
 
 import de.simagdo.engine.items.GameItem;
 import org.joml.Intersectionf;
@@ -20,17 +20,21 @@ public class CameraBoxSelectionDetector {
     }
 
     public void selectGameItem(GameItem[] gameItems, Camera camera) {
+        dir = camera.getViewMatrix().positiveZ(dir).negate();
+        selectGameItem(gameItems, camera.getPosition(), dir);
+    }
+
+    protected void selectGameItem(GameItem[] gameItems, Vector3f center, Vector3f direction) {
         GameItem selectedGameItem = null;
         float closestDistance = Float.POSITIVE_INFINITY;
 
-        dir = camera.getViewMatrix().positiveZ(dir).negate();
         for (GameItem gameItem : gameItems) {
             gameItem.setSelected(false);
             min.set(gameItem.getPosition());
             max.set(gameItem.getPosition());
             min.add(-gameItem.getScale(), -gameItem.getScale(), -gameItem.getScale());
             max.add(gameItem.getScale(), gameItem.getScale(), gameItem.getScale());
-            if (Intersectionf.intersectRayAab(camera.getPosition(), dir, min, max, nearFar) && nearFar.x < closestDistance) {
+            if (Intersectionf.intersectRayAab(center, direction, min, max, nearFar) && nearFar.x < closestDistance) {
                 closestDistance = nearFar.x;
                 selectedGameItem = gameItem;
             }

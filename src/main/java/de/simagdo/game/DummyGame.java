@@ -2,7 +2,8 @@ package de.simagdo.game;
 
 import de.simagdo.engine.*;
 import de.simagdo.engine.graph.*;
-import de.simagdo.engine.graph.animation.AnimatedGameItem;
+import de.simagdo.engine.graph.camera.Camera;
+import de.simagdo.engine.graph.camera.CameraBoxSelectionDetector;
 import de.simagdo.engine.graph.lights.DirectionalLight;
 import de.simagdo.engine.graph.particles.FlowParticleEmitter;
 import de.simagdo.engine.graph.particles.Particle;
@@ -11,16 +12,12 @@ import de.simagdo.engine.graph.weather.Fog;
 import de.simagdo.engine.items.GameItem;
 import de.simagdo.engine.items.SkyBox;
 import de.simagdo.engine.items.Terrain;
-import de.simagdo.engine.loaders.md5.MD5AnimModel;
-import de.simagdo.engine.loaders.md5.MD5Loader;
-import de.simagdo.engine.loaders.md5.MD5Model;
 import de.simagdo.engine.loaders.obj.OBJLoader;
 import de.simagdo.engine.sound.SoundBuffer;
 import de.simagdo.engine.sound.SoundListener;
 import de.simagdo.engine.sound.SoundManager;
 import de.simagdo.engine.sound.SoundSource;
 import de.simagdo.engine.window.Window;
-import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -52,7 +49,7 @@ public class DummyGame implements IGameLogic {
     private Terrain terrain;
     private FlowParticleEmitter particleEmitter;
     private SoundManager soundManager;
-    private CameraBoxSelectionDetector selectionDetector;
+    private MouseBoxSelectionDetector selectionDetector;
 
     private enum Sounds {
         MUSIC,
@@ -67,7 +64,7 @@ public class DummyGame implements IGameLogic {
         this.angleInc = 0;
         this.lightAngle = 45;
         this.soundManager = new SoundManager();
-        this.selectionDetector = new CameraBoxSelectionDetector();
+        this.selectionDetector = new MouseBoxSelectionDetector();
     }
 
     @Override
@@ -263,9 +260,9 @@ public class DummyGame implements IGameLogic {
     }
 
     @Override
-    public void update(float interval, MouseInput mouseInput) {
-        // Update camera based on mouse
+    public void update(float interval, MouseInput mouseInput, Window window) {
         if (mouseInput.isRightButtonPressed()) {
+            //Update Camera based on mouse
             Vector2f rotVec = mouseInput.getDisplVec();
             this.camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY, 0);
         }
@@ -300,7 +297,8 @@ public class DummyGame implements IGameLogic {
         //Update sound listener position
         this.soundManager.updateListenerPosition(camera);
 
-        this.selectionDetector.selectGameItem(this.gameItems, this.camera);
+        if (mouseInput.isLeftButtonPressed())
+            this.selectionDetector.selectGameItem(this.gameItems, window, mouseInput.getCurrentPos(), this.camera);
     }
 
     @Override

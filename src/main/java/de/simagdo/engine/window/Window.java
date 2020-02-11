@@ -1,5 +1,6 @@
 package de.simagdo.engine.window;
 
+import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -11,6 +12,12 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class Window {
 
+    /**
+     * Field of View in Radians
+     */
+    private static final float FOV = (float) Math.toRadians(60.0f);
+    private static final float Z_NEAR = 0.01f;
+    private static final float Z_FAR = 1000.0f;
     private final String title;
     private int width;
     private int height;
@@ -18,6 +25,7 @@ public class Window {
     private boolean resized;
     private boolean vSync;
     private WindowOptions windowOptions;
+    private Matrix4f projectionMatrix;
 
     public Window(String title, int width, int height, boolean vSync, WindowOptions windowOptions) {
         this.title = title;
@@ -26,6 +34,7 @@ public class Window {
         this.resized = false;
         this.vSync = vSync;
         this.windowOptions = windowOptions;
+        this.projectionMatrix = new Matrix4f();
     }
 
     public void init() {
@@ -193,5 +202,16 @@ public class Window {
         glfwSwapBuffers(this.windowHandle);
         glfwPollEvents();
     }
+
+
+    public Matrix4f getProjectionMatrix() {
+        return this.projectionMatrix;
+    }
+
+    public Matrix4f updateProjectionMatrix() {
+        float aspectRatio = (float) width / (float) height;
+        return projectionMatrix.setPerspective(FOV, aspectRatio, Z_NEAR, Z_FAR);
+    }
+
 
 }
