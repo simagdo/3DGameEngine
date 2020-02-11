@@ -15,6 +15,7 @@ public class MainComponent {
             windowOptions.cullFace = true;
             windowOptions.showFPS = true;
             windowOptions.compatibleProfile = true;
+            windowOptions.antialiasing = true;
             GameEngine engine = new GameEngine("Game", 800, 600, vSync, windowOptions, gameLogic);
             engine.start();
         } catch (Exception e) {

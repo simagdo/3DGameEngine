@@ -1,9 +1,11 @@
 package de.simagdo.game;
 
 import de.simagdo.engine.*;
-import de.simagdo.engine.graph.*;
+import de.simagdo.engine.graph.HeightMapMesh;
+import de.simagdo.engine.graph.Material;
+import de.simagdo.engine.graph.Mesh;
+import de.simagdo.engine.graph.Renderer;
 import de.simagdo.engine.graph.camera.Camera;
-import de.simagdo.engine.graph.camera.CameraBoxSelectionDetector;
 import de.simagdo.engine.graph.lights.DirectionalLight;
 import de.simagdo.engine.graph.particles.FlowParticleEmitter;
 import de.simagdo.engine.graph.particles.Particle;
@@ -50,6 +52,7 @@ public class DummyGame implements IGameLogic {
     private FlowParticleEmitter particleEmitter;
     private SoundManager soundManager;
     private MouseBoxSelectionDetector selectionDetector;
+    private boolean leftButtonPressed;
 
     private enum Sounds {
         MUSIC,
@@ -63,14 +66,17 @@ public class DummyGame implements IGameLogic {
         this.cameraInc = new Vector3f(0.0f, 0.0f, 0.0f);
         this.angleInc = 0;
         this.lightAngle = 45;
+        this.hud = new Hud();
         this.soundManager = new SoundManager();
         this.selectionDetector = new MouseBoxSelectionDetector();
+        this.leftButtonPressed = false;
     }
 
     @Override
     public void init(Window window) throws Exception {
         this.renderer.init(window);
 
+        this.hud.init(window);
         this.scene = new Scene();
         this.soundManager.init();
 
@@ -179,8 +185,6 @@ public class DummyGame implements IGameLogic {
         this.camera.getRotation().x = 25;
         this.camera.getRotation().y = -1;
 
-        this.hud = new Hud("");
-
     }
 
     private void setupLights() {
@@ -287,7 +291,6 @@ public class DummyGame implements IGameLogic {
         lightDirection.x = 0;
         lightDirection.y = yValue;
         lightDirection.z = zValue;
-        this.hud.setStatusText("X: " + this.camera.getPosition().x + ", Y: " + this.camera.getPosition().y + ", Z: " + this.camera.getPosition().z + ", RotX: " + this.camera.getRotation().x + ", RotY: " + this.camera.getRotation().y + ", RotZ: " + this.camera.getRotation().z);
 
         this.particleEmitter.update((long) (interval * 1000));
 
@@ -299,13 +302,18 @@ public class DummyGame implements IGameLogic {
 
         if (mouseInput.isLeftButtonPressed())
             this.selectionDetector.selectGameItem(this.gameItems, window, mouseInput.getCurrentPos(), this.camera);
+
+        boolean aux = mouseInput.isLeftButtonPressed();
+        if (aux && !this.leftButtonPressed && this.selectionDetector.selectGameItem(gameItems, window, mouseInput.getCurrentPos(), camera)) {
+            this.hud.incCounter();
+        }
+        this.leftButtonPressed = aux;
     }
 
     @Override
     public void render(Window window) {
-        if (this.hud != null)
-            this.hud.updateSize(window);
-        this.renderer.render(window, this.camera, this.scene, this.hud);
+        this.renderer.render(window, this.camera, this.scene);
+        this.hud.render(window);
     }
 
     @Override

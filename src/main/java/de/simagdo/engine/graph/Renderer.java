@@ -31,7 +31,6 @@ import static org.lwjgl.opengl.GL30.glBindFramebuffer;
 public class Renderer {
 
     private ShaderProgram sceneShaderProgram;
-    private ShaderProgram hudShaderProgram;
     private ShaderProgram skyBoxShaderProgram;
     private ShaderProgram depthShaderProgram;
     private ShaderProgram particlesShaderProgram;
@@ -52,7 +51,6 @@ public class Renderer {
         this.setupSceneShader();
         this.setupSkyBoxShader();
         this.setupParticlesShader();
-        this.setupHudShader();
     }
 
     private void setupSceneShader() throws Exception {
@@ -94,18 +92,6 @@ public class Renderer {
 
         this.sceneShaderProgram.createUniform("selectedNonInstanced");
 
-    }
-
-    private void setupHudShader() throws Exception {
-        this.hudShaderProgram = new ShaderProgram();
-        this.hudShaderProgram.createVertexShader(Utils.loadResource("/shaders/hud_vertex.vs"));
-        this.hudShaderProgram.createFragmentShader(Utils.loadResource("/shaders/hud_fragment.fs"));
-        this.hudShaderProgram.link();
-
-        //Create uniforms for Ortographic-model projection matrix and base colour
-        this.hudShaderProgram.createUniform("projModelMatrix");
-        this.hudShaderProgram.createUniform("colour");
-        this.hudShaderProgram.createUniform("hasTexture");
     }
 
     private void setupSkyBoxShader() throws Exception {
@@ -152,7 +138,7 @@ public class Renderer {
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
     }
 
-    public void render(Window window, Camera camera, Scene scene, IHud hud) {
+    public void render(Window window, Camera camera, Scene scene) {
         this.clear();
 
         //Render Depth Map before View Ports have been set up
@@ -171,9 +157,6 @@ public class Renderer {
 
         //Render Particles
         this.renderParticles(window, camera, scene);
-
-        //Render HUD
-        this.renderHud(window, hud);
 
         //Render Cross Hair
         this.renderCrossHair(window);
@@ -253,29 +236,6 @@ public class Renderer {
         currDirLight.setDirection(new Vector3f(dir.x, dir.y, dir.z));
         this.sceneShaderProgram.setUniform("directionalLight", sceneLight.getDirectionalLight());
 
-    }
-
-    private void renderHud(Window window, IHud hud) {
-        if (hud != null) {
-            this.hudShaderProgram.bind();
-
-            Matrix4f ortho = this.transformation.getOrtho2DProjectionMatrix(0, window.getWidth(), window.getHeight(), 0);
-
-            for (GameItem gameItem : hud.getGameItems()) {
-                Mesh mesh = gameItem.getMesh();
-
-                //Set ortotaphic and model matrix for this HUD item
-                Matrix4f projModelMatrix = this.transformation.buildOrthoProjModelMatrix(gameItem, ortho);
-                this.hudShaderProgram.setUniform("projModelMatrix", projModelMatrix);
-                this.hudShaderProgram.setUniform("colour", gameItem.getMesh().getMaterial().getAmbientColour());
-                this.hudShaderProgram.setUniform("hasTexture", gameItem.getMesh().getMaterial().isTextured() ? 1 : 0);
-
-                //Render the Mesh for this HUD Item
-                mesh.render();
-            }
-
-            this.hudShaderProgram.unbind();
-        }
     }
 
     private void renderSkyBox(Window window, Camera camera, Scene scene) {
@@ -504,7 +464,6 @@ public class Renderer {
 
     public void cleanUp() {
         if (this.sceneShaderProgram != null) this.sceneShaderProgram.cleanUp();
-        if (this.hudShaderProgram != null) this.hudShaderProgram.cleanUp();
         if (this.skyBoxShaderProgram != null) this.skyBoxShaderProgram.cleanUp();
         if (this.shadowMap != null) this.shadowMap.cleanUp();
         if (this.particlesShaderProgram != null) this.particlesShaderProgram.cleanUp();

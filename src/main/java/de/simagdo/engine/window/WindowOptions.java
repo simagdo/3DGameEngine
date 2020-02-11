@@ -6,5 +6,6 @@ public class WindowOptions {
     public boolean showTriangles;
     public boolean showFPS;
     public boolean compatibleProfile;
+    public boolean antialiasing;
 
 }
