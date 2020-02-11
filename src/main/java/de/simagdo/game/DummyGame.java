@@ -117,6 +117,7 @@ public class DummyGame implements IGameLogic {
 
         int instances = height * width;
         Mesh mesh = OBJLoader.loadMesh("/models/cube.obj", instances);
+        mesh.setBoundingRadius(1);
         Texture texture = new Texture("/textures/terrain_textures.png", 2, 1);
         Material material = new Material(texture, reflectance);
         mesh.setMaterial(material);

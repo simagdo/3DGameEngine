@@ -7,5 +7,6 @@ public class WindowOptions {
     public boolean showFPS;
     public boolean compatibleProfile;
     public boolean antialiasing;
+    public boolean frustumCulling;
 
 }

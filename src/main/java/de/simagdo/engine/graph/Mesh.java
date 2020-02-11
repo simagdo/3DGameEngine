@@ -23,6 +23,7 @@ public class Mesh {
     private final int vertexCount;
     private Material material;
     public static final int MAX_WEIGHTS = 4;
+    private float boundingRadius;
 
     public Mesh(float[] positions, float[] textCoords, float[] normals, int[] indices) {
         this(positions, textCoords, normals, indices, createEmptyIntArray(MAX_WEIGHTS * positions.length / 3, 0), createEmptyFloatArray(MAX_WEIGHTS * positions.length / 3, 0));
@@ -135,6 +136,14 @@ public class Mesh {
         return this.vertexCount;
     }
 
+    public float getBoundingRadius() {
+        return boundingRadius;
+    }
+
+    public void setBoundingRadius(float boundingRadius) {
+        this.boundingRadius = boundingRadius;
+    }
+
     public void render() {
         this.initRender();
 
@@ -147,11 +156,13 @@ public class Mesh {
         this.initRender();
 
         for (GameItem gameItem : gameItems) {
-            //Set up Data required by GameItem
-            consumer.accept(gameItem);
+            if (gameItem.isInsideFrustum()) {
+                //Set up Data required by GameItem
+                consumer.accept(gameItem);
 
-            //Render this GameItem
-            GL11.glDrawElements(GL11.GL_TRIANGLES, this.getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
+                //Render this GameItem
+                GL11.glDrawElements(GL11.GL_TRIANGLES, this.getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
+            }
         }
 
         this.endRender();

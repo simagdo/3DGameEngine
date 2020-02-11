@@ -19,6 +19,7 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -39,10 +40,14 @@ public class Renderer {
     private static final int MAX_POINT_LIGHTS = 5;
     private static final int MAX_SPOT_LIGHTS = 5;
     private ShadowMap shadowMap;
+    private final FrustumCullingFilter frustumCullingFilter;
+    private final List<GameItem> filteredItems;
 
     public Renderer() {
         this.transformation = new Transformation();
         this.specularPower = 10f;
+        this.frustumCullingFilter = new FrustumCullingFilter();
+        this.filteredItems = new ArrayList<>();
     }
 
     public void init(Window window) throws Exception {
@@ -140,6 +145,12 @@ public class Renderer {
 
     public void render(Window window, Camera camera, Scene scene) {
         this.clear();
+
+        if(window.getWindowOptions().frustumCulling) {
+            this.frustumCullingFilter.updateFrustum(window.getProjectionMatrix(), camera.getViewMatrix());
+            this.frustumCullingFilter.filter(scene.getMeshMap());
+            this.frustumCullingFilter.filter(scene.getInstancedMeshMap());
+        }
 
         //Render Depth Map before View Ports have been set up
         this.renderDepthMap(window, camera, scene);
@@ -393,6 +404,12 @@ public class Renderer {
                 shader.setUniform("material", mesh.getMaterial());
                 glActiveTexture(GL_TEXTURE2);
                 glBindTexture(GL_TEXTURE_2D, shadowMap.getDepthMap().getId());
+            }
+            this.filteredItems.clear();
+            for (GameItem gameItem : mapMeshes.get(mesh)) {
+                if (gameItem.isInsideFrustum()) {
+                    this.filteredItems.add(gameItem);
+                }
             }
             mesh.renderListInstanced(mapMeshes.get(mesh), transformation, viewMatrix, lightViewMatrix);
         }
