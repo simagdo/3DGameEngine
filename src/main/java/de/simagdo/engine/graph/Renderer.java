@@ -61,8 +61,8 @@ public class Renderer {
     private void setupSceneShader() throws Exception {
         // Create shader
         this.sceneShaderProgram = new ShaderProgram();
-        this.sceneShaderProgram.createVertexShader(Utils.loadResource("/shaders/scene_vertex.vs"));
-        this.sceneShaderProgram.createFragmentShader(Utils.loadResource("/shaders/scene_fragment.fs"));
+        this.sceneShaderProgram.createVertexShader(Utils.loadResource("/shaders/scene_shaders/scene_vertex.vs"));
+        this.sceneShaderProgram.createFragmentShader(Utils.loadResource("/shaders/scene_shaders/scene_fragment.fs"));
         this.sceneShaderProgram.link();
 
         // Create uniforms for modelView and projection matrices and text
@@ -101,8 +101,8 @@ public class Renderer {
 
     private void setupSkyBoxShader() throws Exception {
         this.skyBoxShaderProgram = new ShaderProgram();
-        this.skyBoxShaderProgram.createVertexShader(Utils.loadResource("/shaders/sb_vertex.vs"));
-        this.skyBoxShaderProgram.createFragmentShader(Utils.loadResource("/shaders/sb_fragment.fs"));
+        this.skyBoxShaderProgram.createVertexShader(Utils.loadResource("/shaders/skybox_shaders/sb_vertex.vs"));
+        this.skyBoxShaderProgram.createFragmentShader(Utils.loadResource("/shaders/skybox_shaders/sb_fragment.fs"));
         this.skyBoxShaderProgram.link();
 
         this.skyBoxShaderProgram.createUniform("projectionMatrix");
@@ -115,8 +115,8 @@ public class Renderer {
 
     private void setupDepthShader() throws Exception {
         this.depthShaderProgram = new ShaderProgram();
-        this.depthShaderProgram.createVertexShader(Utils.loadResource("/shaders/depth_vertex.vs"));
-        this.depthShaderProgram.createFragmentShader(Utils.loadResource("/shaders/depth_fragment.fs"));
+        this.depthShaderProgram.createVertexShader(Utils.loadResource("/shaders/depth_shaders/depth_vertex.vs"));
+        this.depthShaderProgram.createFragmentShader(Utils.loadResource("/shaders/depth_shaders/depth_fragment.fs"));
         this.depthShaderProgram.link();
 
         this.depthShaderProgram.createUniform("isInstanced");
@@ -128,8 +128,8 @@ public class Renderer {
 
     private void setupParticlesShader() throws Exception {
         this.particlesShaderProgram = new ShaderProgram();
-        this.particlesShaderProgram.createVertexShader(Utils.loadResource("/shaders/particles_vertex.vs"));
-        this.particlesShaderProgram.createFragmentShader(Utils.loadResource("/shaders/particles_fragment.fs"));
+        this.particlesShaderProgram.createVertexShader(Utils.loadResource("/shaders/particle_shaders/particles_vertex.vs"));
+        this.particlesShaderProgram.createFragmentShader(Utils.loadResource("/shaders/particle_shaders/particles_fragment.fs"));
         this.particlesShaderProgram.link();
 
         this.particlesShaderProgram.createUniform("projectionMatrix");
