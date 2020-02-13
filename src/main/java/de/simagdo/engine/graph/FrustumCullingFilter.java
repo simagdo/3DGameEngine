@@ -12,7 +12,7 @@ import java.util.Map;
 public class FrustumCullingFilter {
 
     private final Matrix4f prjViewMatrix;
-    private FrustumIntersection frustumIntersection;
+    private final FrustumIntersection frustumIntersection;
 
     public FrustumCullingFilter() {
         this.prjViewMatrix = new Matrix4f();

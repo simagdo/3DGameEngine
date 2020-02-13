@@ -169,7 +169,7 @@ public class Mesh {
     }
 
     protected void initRender() {
-        Texture texture = this.material.getTexture();
+        Texture texture = this.material != null ? this.material.getTexture() : null;
         if (texture != null) {
             //Activate first texture Bank
             GL13.glActiveTexture(GL13.GL_TEXTURE0);
@@ -178,9 +178,9 @@ public class Mesh {
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture.getId());
         }
 
-        Texture normalMap = this.material.getNormalMap();
+        Texture normalMap = this.material != null ? this.material.getNormalMap() : null;
         if (normalMap != null) {
-            //Activate first texture bank
+            //Activate second texture bank
             GL13.glActiveTexture(GL13.GL_TEXTURE1);
             //Bind the Texture
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, normalMap.getId());

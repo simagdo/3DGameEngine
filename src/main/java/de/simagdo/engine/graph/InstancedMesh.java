@@ -21,8 +21,8 @@ public class InstancedMesh extends Mesh {
     private static final int VECTOR4F_SIZE_BYTES = 4 * FLOAT_SIZE_BYTES;
     private static final int MATRIX_SIZE_FLOATS = 4 * 4;
     private static final int MATRIX_SIZE_BYTES = MATRIX_SIZE_FLOATS * FLOAT_SIZE_BYTES;
-    private static final int INSTANCE_SIZE_BYTES = MATRIX_SIZE_BYTES * 2 + FLOAT_SIZE_BYTES * 2 + FLOAT_SIZE_BYTES;
-    private static final int INSTANCE_SIZE_FLOATS = MATRIX_SIZE_FLOATS * 2 + 3;
+    private static final int INSTANCE_SIZE_BYTES = MATRIX_SIZE_BYTES + FLOAT_SIZE_BYTES * 2 + FLOAT_SIZE_BYTES;
+    private static final int INSTANCE_SIZE_FLOATS = MATRIX_SIZE_FLOATS + 3;
     private final int numInstances;
     private final int instanceDataVBO;
     private FloatBuffer instanceDataBuffer;
@@ -34,7 +34,7 @@ public class InstancedMesh extends Mesh {
 
         glBindVertexArray(vaoId);
 
-        // Model View Matrix
+        // Model Matrix
         this.instanceDataVBO = glGenBuffers();
         vboIdList.add(this.instanceDataVBO);
         this.instanceDataBuffer = MemoryUtil.memAllocFloat(numInstances * INSTANCE_SIZE_FLOATS);
@@ -48,21 +48,13 @@ public class InstancedMesh extends Mesh {
             strideStart += VECTOR4F_SIZE_BYTES;
         }
 
-        // Light view matrix
-        for (int i = 0; i < 4; i++) {
-            glVertexAttribPointer(start, 4, GL_FLOAT, false, VECTOR4F_SIZE_BYTES, strideStart);
-            glVertexAttribDivisor(start, 1);
-            start++;
-            strideStart += VECTOR4F_SIZE_BYTES;
-        }
-
         //Texture offsets
         glVertexAttribPointer(start, 2, GL_FLOAT, false, INSTANCE_SIZE_BYTES, strideStart);
         glVertexAttribDivisor(start, 1);
         strideStart += FLOAT_SIZE_BYTES * 2;
         start++;
 
-        //Selected
+        //Selected or scaling (for particles)
         glVertexAttribPointer(start, 1, GL_FLOAT, false, INSTANCE_SIZE_BYTES, strideStart);
         glVertexAttribDivisor(start, 1);
         //start++;
@@ -102,11 +94,11 @@ public class InstancedMesh extends Mesh {
         super.endRender();
     }
 
-    public void renderListInstanced(List<GameItem> gameItems, Transformation transformation, Matrix4f viewMatrix, Matrix4f lightViewMatrix) {
-        this.renderListInstanced(gameItems, false, transformation, viewMatrix, lightViewMatrix);
+    public void renderListInstanced(List<GameItem> gameItems, Transformation transformation, Matrix4f viewMatrix) {
+        this.renderListInstanced(gameItems, false, transformation, viewMatrix);
     }
 
-    public void renderListInstanced(List<GameItem> gameItems, boolean billBoard, Transformation transformation, Matrix4f viewMatrix, Matrix4f lightViewMatrix) {
+    public void renderListInstanced(List<GameItem> gameItems, boolean billBoard, Transformation transformation, Matrix4f viewMatrix) {
         this.initRender();
 
         int chunkSize = numInstances;
@@ -114,13 +106,13 @@ public class InstancedMesh extends Mesh {
         for (int i = 0; i < length; i += chunkSize) {
             int end = Math.min(length, i + chunkSize);
             List<GameItem> subList = gameItems.subList(i, end);
-            this.renderChunkInstanced(subList, billBoard, transformation, viewMatrix, lightViewMatrix);
+            this.renderChunkInstanced(subList, billBoard, transformation, viewMatrix);
         }
 
         this.endRender();
     }
 
-    private void renderChunkInstanced(List<GameItem> gameItems, boolean billBoard, Transformation transformation, Matrix4f viewMatrix, Matrix4f lightViewMatrix) {
+    private void renderChunkInstanced(List<GameItem> gameItems, boolean billBoard, Transformation transformation, Matrix4f viewMatrix) {
         this.instanceDataBuffer.clear();
 
         int i = 0;
@@ -128,39 +120,30 @@ public class InstancedMesh extends Mesh {
         Texture texture = this.getMaterial().getTexture();
         for (GameItem gameItem : gameItems) {
             Matrix4f modelMatrix = transformation.buildModelMatrix(gameItem);
-            if (viewMatrix != null) {
-                if (billBoard) {
-                    viewMatrix.transpose3x3(modelMatrix);
-                }
-                Matrix4f modelViewMatrix = transformation.buildModelViewMatrix(modelMatrix, viewMatrix);
-                if (billBoard) {
-                    modelViewMatrix.scale(gameItem.getScale());
-                }
-                modelViewMatrix.get(INSTANCE_SIZE_FLOATS * i, this.instanceDataBuffer);
+            if (viewMatrix != null && billBoard) {
+                viewMatrix.transpose3x3(modelMatrix);
             }
-            if (lightViewMatrix != null) {
-                Matrix4f modelLightViewMatrix = transformation.buildModelLightViewMatrix(modelMatrix, lightViewMatrix);
-                modelLightViewMatrix.get(INSTANCE_SIZE_FLOATS * i + MATRIX_SIZE_FLOATS, this.instanceDataBuffer);
-            }
+            modelMatrix.get(INSTANCE_SIZE_FLOATS * i, this.instanceDataBuffer);
+
             if (texture != null) {
                 int col = gameItem.getTextPos() % texture.getNumCols();
                 int row = gameItem.getTextPos() / texture.getNumCols();
                 float textXOffset = (float) col / texture.getNumCols();
                 float textYOffset = (float) row / texture.getNumRows();
-                int buffPos = INSTANCE_SIZE_FLOATS * i + MATRIX_SIZE_FLOATS * 2;
+                int buffPos = INSTANCE_SIZE_FLOATS * i + MATRIX_SIZE_FLOATS;
                 this.instanceDataBuffer.put(buffPos, textXOffset);
                 this.instanceDataBuffer.put(buffPos + 1, textYOffset);
             }
 
-            //Selected Data
-            int buffPos = INSTANCE_SIZE_FLOATS * i + MATRIX_SIZE_FLOATS * 2 + 2;
-            this.instanceDataBuffer.put(buffPos, gameItem.isSelected() ? 1 : 0);
+            //Selected Data or scaling for billboard
+            int buffPos = INSTANCE_SIZE_FLOATS * i + MATRIX_SIZE_FLOATS + 2;
+            this.instanceDataBuffer.put(buffPos, billBoard ? gameItem.getScale() : gameItem.isSelected() ? 1 : 0);
 
             i++;
         }
 
         glBindBuffer(GL_ARRAY_BUFFER, this.instanceDataVBO);
-        glBufferData(GL_ARRAY_BUFFER, this.instanceDataBuffer, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, this.instanceDataBuffer, GL_DYNAMIC_READ);
 
         glDrawElementsInstanced(GL_TRIANGLES, getVertexCount(), GL_UNSIGNED_INT, 0, gameItems.size());
 

@@ -39,6 +39,12 @@ public class ShaderProgram {
         this.uniforms.put(uniformName, uniformLocation);
     }
 
+    public void createUniform(String uniformName, int size) throws Exception {
+        for (int i = 0; i < size; i++) {
+            this.createUniform(uniformName + "[" + i + "]");
+        }
+    }
+
     public void createPointLightUniform(String uniformName) throws Exception {
         this.createUniform(uniformName + ".colour");
         this.createUniform(uniformName + ".position");
@@ -147,6 +153,14 @@ public class ShaderProgram {
         this.setUniform(uniformName + ".activeFog", fog.isActive() ? 1 : 0);
         this.setUniform(uniformName + ".colour", fog.getColour());
         this.setUniform(uniformName + ".density", fog.getDensity());
+    }
+
+    public void setUniform(String uniformName, Matrix4f value, int index) {
+        this.setUniform(uniformName + "[" + index + "]", value);
+    }
+
+    public void setUniform(String uniformName, float value, int index) {
+        this.setUniform(uniformName + "[" + index + "]", value);
     }
 
     public void createVertexShader(String shaderCode) throws Exception {

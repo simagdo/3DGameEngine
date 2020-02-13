@@ -9,6 +9,8 @@ import de.simagdo.engine.graph.lights.OrthoCoords;
 import de.simagdo.engine.graph.lights.PointLight;
 import de.simagdo.engine.graph.lights.SpotLight;
 import de.simagdo.engine.graph.particles.IParticleEmitter;
+import de.simagdo.engine.graph.shadow.ShadowCascade;
+import de.simagdo.engine.graph.shadow.ShadowRenderer;
 import de.simagdo.engine.graph.text.Texture;
 import de.simagdo.engine.items.GameItem;
 import de.simagdo.engine.items.SkyBox;
@@ -33,26 +35,25 @@ public class Renderer {
 
     private ShaderProgram sceneShaderProgram;
     private ShaderProgram skyBoxShaderProgram;
-    private ShaderProgram depthShaderProgram;
     private ShaderProgram particlesShaderProgram;
     private Transformation transformation;
     private float specularPower;
     private static final int MAX_POINT_LIGHTS = 5;
     private static final int MAX_SPOT_LIGHTS = 5;
-    private ShadowMap shadowMap;
     private final FrustumCullingFilter frustumCullingFilter;
     private final List<GameItem> filteredItems;
+    private final ShadowRenderer shadowRenderer;
 
     public Renderer() {
         this.transformation = new Transformation();
         this.specularPower = 10f;
         this.frustumCullingFilter = new FrustumCullingFilter();
         this.filteredItems = new ArrayList<>();
+        this.shadowRenderer = new ShadowRenderer();
     }
 
     public void init(Window window) throws Exception {
-        this.shadowMap = new ShadowMap();
-        this.setupDepthShader();
+        this.shadowRenderer.init(window);
         this.setupSceneShader();
         this.setupSkyBoxShader();
         this.setupParticlesShader();
@@ -65,9 +66,9 @@ public class Renderer {
         this.sceneShaderProgram.createFragmentShader(Utils.loadResource("/shaders/scene_shaders/scene_fragment.fs"));
         this.sceneShaderProgram.link();
 
-        // Create uniforms for modelView and projection matrices and text
+        // Create uniforms for View and projection matrices and text
+        this.sceneShaderProgram.createUniform("viewMatrix");
         this.sceneShaderProgram.createUniform("projectionMatrix");
-        this.sceneShaderProgram.createUniform("modelViewNonInstancedMatrix");
         this.sceneShaderProgram.createUniform("texture_sampler");
         this.sceneShaderProgram.createUniform("normalMap");
 
@@ -83,9 +84,13 @@ public class Renderer {
         this.sceneShaderProgram.createFogUniform("fog");
 
         //Create uniforms for Shadow mapping
-        this.sceneShaderProgram.createUniform("shadowMap");
-        this.sceneShaderProgram.createUniform("orthoProjectionMatrix");
-        this.sceneShaderProgram.createUniform("modelLightViewNonInstancedMatrix");
+        for (int i = 0; i < ShadowRenderer.NUM_CASCADES; i++) {
+            this.sceneShaderProgram.createUniform("shadowMap_" + i);
+        }
+        this.sceneShaderProgram.createUniform("orthoProjectionMatrix", ShadowRenderer.NUM_CASCADES);
+        this.sceneShaderProgram.createUniform("modelNonInstancedMatrix");
+        this.sceneShaderProgram.createUniform("lightViewMatrix", ShadowRenderer.NUM_CASCADES);
+        this.sceneShaderProgram.createUniform("cascadeFarPlanes", ShadowRenderer.NUM_CASCADES);
         this.sceneShaderProgram.createUniform("renderShadow");
 
         //Create uniform for joint Matrices
@@ -113,25 +118,13 @@ public class Renderer {
         this.skyBoxShaderProgram.createUniform("hasTexture");
     }
 
-    private void setupDepthShader() throws Exception {
-        this.depthShaderProgram = new ShaderProgram();
-        this.depthShaderProgram.createVertexShader(Utils.loadResource("/shaders/depth_shaders/depth_vertex.vs"));
-        this.depthShaderProgram.createFragmentShader(Utils.loadResource("/shaders/depth_shaders/depth_fragment.fs"));
-        this.depthShaderProgram.link();
-
-        this.depthShaderProgram.createUniform("isInstanced");
-
-        this.depthShaderProgram.createUniform("jointsMatrix");
-        this.depthShaderProgram.createUniform("modelLightViewNonInstancedMatrix");
-        this.depthShaderProgram.createUniform("orthoProjectionMatrix");
-    }
-
     private void setupParticlesShader() throws Exception {
         this.particlesShaderProgram = new ShaderProgram();
         this.particlesShaderProgram.createVertexShader(Utils.loadResource("/shaders/particle_shaders/particles_vertex.vs"));
         this.particlesShaderProgram.createFragmentShader(Utils.loadResource("/shaders/particle_shaders/particles_fragment.fs"));
         this.particlesShaderProgram.link();
 
+        this.particlesShaderProgram.createUniform("viewMatrix");
         this.particlesShaderProgram.createUniform("projectionMatrix");
         this.particlesShaderProgram.createUniform("texture_sampler");
 
@@ -140,20 +133,21 @@ public class Renderer {
     }
 
     public void clear() {
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 
-    public void render(Window window, Camera camera, Scene scene) {
+    public void render(Window window, Camera camera, Scene scene, boolean sceneChanged) {
         this.clear();
 
-        if(window.getWindowOptions().frustumCulling) {
+        if (window.getWindowOptions().frustumCulling) {
             this.frustumCullingFilter.updateFrustum(window.getProjectionMatrix(), camera.getViewMatrix());
             this.frustumCullingFilter.filter(scene.getMeshMap());
             this.frustumCullingFilter.filter(scene.getInstancedMeshMap());
         }
 
         //Render Depth Map before View Ports have been set up
-        this.renderDepthMap(window, camera, scene);
+        if (scene.isRenderShadows() && sceneChanged)
+            this.shadowRenderer.render(window, scene, camera, this.transformation, this);
 
         glViewport(0, 0, window.getWidth(), window.getHeight());
 
@@ -177,26 +171,35 @@ public class Renderer {
         this.sceneShaderProgram.bind();
 
         //Update Projection Matrix
-        Matrix4f projectionMatrix = window.getProjectionMatrix();
-        this.sceneShaderProgram.setUniform("projectionMatrix", projectionMatrix);
-        Matrix4f orthoProjectionMatrix = this.transformation.getOrthoProjectionMatrix();
-        this.sceneShaderProgram.setUniform("orthoProjectionMatrix", orthoProjectionMatrix);
-        Matrix4f lightViewMatrix = this.transformation.getLightViewMatrix();
-
-        // Update view Matrix
         Matrix4f viewMatrix = camera.getViewMatrix();
+        Matrix4f projectionMatrix = window.getProjectionMatrix();
+        this.sceneShaderProgram.setUniform("viewMatrix", viewMatrix);
+        this.sceneShaderProgram.setUniform("projectionMatrix", projectionMatrix);
 
-        //Update Light Uniforms
+        int i = 0;
+        for (ShadowCascade shadowCascade : this.shadowRenderer.getShadowCascades()) {
+            this.sceneShaderProgram.setUniform("orthoProjectionMatrix", shadowCascade.getOrthoProjMatrix(), i);
+            this.sceneShaderProgram.setUniform("cascadeFarPlanes", ShadowRenderer.CASCADE_SPLITS[i], i);
+            this.sceneShaderProgram.setUniform("lightViewMatrix", shadowCascade.getLightViewMatrix(), i);
+            i++;
+        }
+
+        //Render Lights
         this.renderLights(viewMatrix, scene.getSceneLight());
 
         this.sceneShaderProgram.setUniform("fog", scene.getFog());
         this.sceneShaderProgram.setUniform("texture_sampler", 0);
         this.sceneShaderProgram.setUniform("normalMap", 1);
-        this.sceneShaderProgram.setUniform("shadowMap", 2);
+
+        int start = 2;
+        for (i = 0; i < ShadowRenderer.NUM_CASCADES; i++) {
+            this.sceneShaderProgram.setUniform("shadowMap_" + i, start + i);
+        }
+
         this.sceneShaderProgram.setUniform("renderShadow", scene.isRenderShadows() ? 1 : 0);
 
-        this.renderNonInstancedMeshes(scene, this.sceneShaderProgram, viewMatrix, lightViewMatrix);
-        this.renderInstancedMeshes(scene, this.sceneShaderProgram, viewMatrix, lightViewMatrix);
+        this.renderNonInstancedMeshes(scene);
+        this.renderInstancedMeshes(scene, viewMatrix);
 
         this.sceneShaderProgram.unbind();
     }
@@ -287,45 +290,15 @@ public class Renderer {
         }
     }
 
-    private void renderDepthMap(Window window, Camera camera, Scene scene) {
-        if (scene.isRenderShadows()) {
-            //Setup View Port to match the Texture size
-            glBindFramebuffer(GL_FRAMEBUFFER, this.shadowMap.getDepthMapFBO());
-            glViewport(0, 0, ShadowMap.SHADOW_MAP_WIDTH, ShadowMap.SHADOW_MAP_HEIGHT);
-            glClear(GL_DEPTH_BUFFER_BIT);
-
-            this.depthShaderProgram.bind();
-
-            DirectionalLight directionalLight = scene.getSceneLight().getDirectionalLight();
-            Vector3f lightDirection = directionalLight.getDirection();
-
-            float lightAngleX = (float) Math.toDegrees(Math.acos(lightDirection.z));
-            float lightAngleY = (float) Math.toDegrees(Math.asin(lightDirection.x));
-            float lightAngleZ = 0;
-
-            Matrix4f lightViewMatrix = this.transformation.updateLightViewMatrix(new Vector3f(lightDirection).mul(directionalLight.getShadowPosMult()), new Vector3f(lightAngleX, lightAngleY, lightAngleZ));
-            OrthoCoords orthoCoords = directionalLight.getOrthoCoords();
-            Matrix4f orthoProjectionMatrix = this.transformation.updateOrthoProjectionMatrix(orthoCoords.left, orthoCoords.right, orthoCoords.bottom, orthoCoords.top, orthoCoords.near, orthoCoords.far);
-            this.depthShaderProgram.setUniform("orthoProjectionMatrix", orthoProjectionMatrix);
-
-            this.renderNonInstancedMeshes(scene, this.depthShaderProgram, null, lightViewMatrix);
-
-            this.renderInstancedMeshes(scene, this.depthShaderProgram, null, lightViewMatrix);
-
-            //Unbind
-            this.depthShaderProgram.unbind();
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        }
-    }
-
     private void renderParticles(Window window, Camera camera, Scene scene) {
         this.particlesShaderProgram.bind();
 
+        Matrix4f viewMatrix = camera.getViewMatrix();
+        this.particlesShaderProgram.setUniform("viewMatrix", viewMatrix);
         this.particlesShaderProgram.setUniform("texture_sampler", 0);
         Matrix4f projectionMatrix = window.getProjectionMatrix();
         this.particlesShaderProgram.setUniform("projectionMatrix", projectionMatrix);
 
-        Matrix4f viewMatrix = camera.getViewMatrix();
         IParticleEmitter[] emitters = scene.getParticleEmitters();
         int numEmitters = emitters != null ? emitters.length : 0;
 
@@ -340,7 +313,7 @@ public class Renderer {
             this.particlesShaderProgram.setUniform("numCols", texture.getNumCols());
             this.particlesShaderProgram.setUniform("numRows", texture.getNumRows());
 
-            mesh.renderListInstanced(emitter.getParticles(), true, this.transformation, viewMatrix, null);
+            mesh.renderListInstanced(emitter.getParticles(), true, this.transformation, viewMatrix);
 
         }
 
@@ -350,17 +323,12 @@ public class Renderer {
         this.particlesShaderProgram.unbind();
     }
 
-    private void renderNonInstancedMeshes(Scene scene, ShaderProgram shader, Matrix4f viewMatrix, Matrix4f lightViewMatrix) {
-        sceneShaderProgram.setUniform("isInstanced", 0);
+    private void renderNonInstancedMeshes(Scene scene) {
+        this.sceneShaderProgram.setUniform("isInstanced", 0);
 
         // Render each mesh with the associated game Items
         Map<Mesh, List<GameItem>> mapMeshes = scene.getMeshMap();
         for (Mesh mesh : mapMeshes.keySet()) {
-            if (viewMatrix != null) {
-                shader.setUniform("material", mesh.getMaterial());
-                glActiveTexture(GL_TEXTURE2);
-                glBindTexture(GL_TEXTURE_2D, this.shadowMap.getDepthMap().getId());
-            }
 
             Texture text = mesh.getMaterial().getTexture();
             if (text != null) {
@@ -368,28 +336,25 @@ public class Renderer {
                 sceneShaderProgram.setUniform("numRows", text.getNumRows());
             }
 
+            this.shadowRenderer.bindTextures(GL_TEXTURE2);
+
             mesh.renderList(mapMeshes.get(mesh), (GameItem gameItem) -> {
                         this.sceneShaderProgram.setUniform("selectedNonInstanced", gameItem.isSelected() ? 1.0f : 0.0f);
                         Matrix4f modelMatrix = transformation.buildModelMatrix(gameItem);
-                        if (viewMatrix != null) {
-                            Matrix4f modelViewMatrix = transformation.buildModelViewMatrix(modelMatrix, viewMatrix);
-                            sceneShaderProgram.setUniform("modelViewNonInstancedMatrix", modelViewMatrix);
-                        }
-                        Matrix4f modelLightViewMatrix = transformation.buildModelLightViewMatrix(modelMatrix, lightViewMatrix);
-                        sceneShaderProgram.setUniform("modelLightViewNonInstancedMatrix", modelLightViewMatrix);
+                        this.sceneShaderProgram.setUniform("modelNonInstancedMatrix", modelMatrix);
 
                         if (gameItem instanceof AnimatedGameItem) {
                             AnimatedGameItem animGameItem = (AnimatedGameItem) gameItem;
                             AnimatedFrame frame = animGameItem.getCurrentFrame();
-                            shader.setUniform("jointsMatrix", frame.getJointMatrices());
+                            this.sceneShaderProgram.setUniform("jointsMatrix", frame.getJointMatrices());
                         }
                     }
             );
         }
     }
 
-    private void renderInstancedMeshes(Scene scene, ShaderProgram shader, Matrix4f viewMatrix, Matrix4f lightViewMatrix) {
-        shader.setUniform("isInstanced", 1);
+    private void renderInstancedMeshes(Scene scene, Matrix4f viewMatrix) {
+        this.sceneShaderProgram.setUniform("isInstanced", 1);
 
         // Render each mesh with the associated game Items
         Map<InstancedMesh, List<GameItem>> mapMeshes = scene.getInstancedMeshMap();
@@ -400,18 +365,18 @@ public class Renderer {
                 sceneShaderProgram.setUniform("numRows", text.getNumRows());
             }
 
-            if (viewMatrix != null) {
-                shader.setUniform("material", mesh.getMaterial());
-                glActiveTexture(GL_TEXTURE2);
-                glBindTexture(GL_TEXTURE_2D, shadowMap.getDepthMap().getId());
-            }
+            this.sceneShaderProgram.setUniform("material", mesh.getMaterial());
+
             this.filteredItems.clear();
             for (GameItem gameItem : mapMeshes.get(mesh)) {
                 if (gameItem.isInsideFrustum()) {
                     this.filteredItems.add(gameItem);
                 }
             }
-            mesh.renderListInstanced(mapMeshes.get(mesh), transformation, viewMatrix, lightViewMatrix);
+
+            this.shadowRenderer.bindTextures(GL_TEXTURE2);
+
+            mesh.renderListInstanced(mapMeshes.get(mesh), transformation, viewMatrix);
         }
     }
 
@@ -482,7 +447,7 @@ public class Renderer {
     public void cleanUp() {
         if (this.sceneShaderProgram != null) this.sceneShaderProgram.cleanUp();
         if (this.skyBoxShaderProgram != null) this.skyBoxShaderProgram.cleanUp();
-        if (this.shadowMap != null) this.shadowMap.cleanUp();
+        if (this.shadowRenderer != null) this.shadowRenderer.cleanUp();
         if (this.particlesShaderProgram != null) this.particlesShaderProgram.cleanUp();
     }
 

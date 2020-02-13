@@ -48,15 +48,14 @@ public class DummyGame implements IGameLogic {
     private Scene scene;
     private float lightAngle;
     private float angleInc;
-    private Terrain terrain;
     private FlowParticleEmitter particleEmitter;
     private SoundManager soundManager;
     private MouseBoxSelectionDetector selectionDetector;
     private boolean leftButtonPressed;
+    private boolean firstTime;
+    private boolean sceneChanged;
 
     private enum Sounds {
-        MUSIC,
-        BEEP,
         FIRE
     }
 
@@ -65,11 +64,12 @@ public class DummyGame implements IGameLogic {
         this.camera = new Camera();
         this.cameraInc = new Vector3f(0.0f, 0.0f, 0.0f);
         this.angleInc = 0;
-        this.lightAngle = 45;
+        this.lightAngle = 90;
         this.hud = new Hud();
         this.soundManager = new SoundManager();
         this.selectionDetector = new MouseBoxSelectionDetector();
         this.leftButtonPressed = false;
+        this.firstTime = true;
     }
 
     @Override
@@ -162,7 +162,7 @@ public class DummyGame implements IGameLogic {
         this.scene.setParticleEmitters(new FlowParticleEmitter[]{this.particleEmitter});
 
         // Shadows
-        this.scene.setRenderShadows(false);
+        this.scene.setRenderShadows(true);
 
         // Fog
         Vector3f fogColour = new Vector3f(0.5f, 0.5f, 0.5f);
@@ -200,24 +200,10 @@ public class DummyGame implements IGameLogic {
         float lightIntensity = 1.0f;
         Vector3f lightPosition = new Vector3f(0, 1, 1);
         DirectionalLight directionalLight = new DirectionalLight(new Vector3f(1, 1, 1), lightPosition, lightIntensity);
-        directionalLight.setShadowPosMult(5);
-        directionalLight.setOrthoCoords(-10.0f, 10.0f, -10.0f, 10.0f, -1.0f, 20.0f);
         sceneLight.setDirectionalLight(directionalLight);
     }
 
     private void setupSounds() throws Exception {
-
-        SoundBuffer buffBack = new SoundBuffer("/sounds/background.ogg");
-        this.soundManager.addSoundBuffer(buffBack);
-        SoundSource sourceBack = new SoundSource(true, true);
-        sourceBack.setBuffer(buffBack.getBufferId());
-        this.soundManager.addSoundSource(Sounds.MUSIC.toString(), sourceBack);
-
-        SoundBuffer buffBeep = new SoundBuffer("/sounds/beep.ogg");
-        this.soundManager.addSoundBuffer(buffBeep);
-        SoundSource sourceBeep = new SoundSource(false, true);
-        sourceBeep.setBuffer(buffBeep.getBufferId());
-        this.soundManager.addSoundSource(Sounds.BEEP.toString(), sourceBeep);
 
         SoundBuffer buffFire = new SoundBuffer("/sounds/fire.ogg");
         this.soundManager.addSoundBuffer(buffFire);
@@ -230,34 +216,39 @@ public class DummyGame implements IGameLogic {
 
         this.soundManager.setListener(new SoundListener(new Vector3f(0, 0, 0)));
 
-        sourceBack.play();
-
     }
 
     @Override
     public void input(Window window, MouseInput mouseInput) {
         this.cameraInc.set(0, 0, 0);
+        this.sceneChanged = false;
         if (window.isKeyPressed(GLFW_KEY_W)) {
             cameraInc.z = -1;
+            this.sceneChanged = true;
         } else if (window.isKeyPressed(GLFW_KEY_S)) {
             cameraInc.z = 1;
+            this.sceneChanged = true;
         }
         if (window.isKeyPressed(GLFW_KEY_A)) {
             cameraInc.x = -1;
+            this.sceneChanged = true;
         } else if (window.isKeyPressed(GLFW_KEY_D)) {
             cameraInc.x = 1;
+            this.sceneChanged = true;
         }
         if (window.isKeyPressed(GLFW_KEY_Z)) {
             cameraInc.y = -1;
+            this.sceneChanged = true;
         } else if (window.isKeyPressed(GLFW_KEY_X)) {
             cameraInc.y = 1;
+            this.sceneChanged = true;
         }
         if (window.isKeyPressed(GLFW_KEY_LEFT)) {
             this.angleInc -= 0.05f;
-            this.soundManager.playSoundSource(Sounds.BEEP.toString());
+            this.sceneChanged = true;
         } else if (window.isKeyPressed(GLFW_KEY_RIGHT)) {
             this.angleInc += 0.05f;
-            this.soundManager.playSoundSource(Sounds.FIRE.toString());
+            this.sceneChanged = true;
         } else {
             this.angleInc = 0;
         }
@@ -270,17 +261,11 @@ public class DummyGame implements IGameLogic {
             //Update Camera based on mouse
             Vector2f rotVec = mouseInput.getDisplVec();
             this.camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY, 0);
+            this.sceneChanged = true;
         }
 
         // Update camera position
-        Vector3f prevPos = new Vector3f(camera.getPosition());
         this.camera.movePosition(cameraInc.x * CAMERA_POS_STEP, cameraInc.y * CAMERA_POS_STEP, cameraInc.z * CAMERA_POS_STEP);
-        // Check if there has been a collision. If true, set the y position to
-        // the maximum height
-        float height = this.terrain != null ? this.terrain.getHeight(this.camera.getPosition()) : -Float.MAX_VALUE;
-        if (this.camera.getPosition().y <= height) {
-            this.camera.setPosition(prevPos.x, prevPos.y, prevPos.z);
-        }
 
         this.lightAngle += this.angleInc;
         if (this.lightAngle < 0) this.lightAngle = 0;
@@ -313,7 +298,11 @@ public class DummyGame implements IGameLogic {
 
     @Override
     public void render(Window window) {
-        this.renderer.render(window, this.camera, this.scene);
+        if (this.firstTime) {
+            this.sceneChanged = true;
+            this.firstTime = false;
+        }
+        this.renderer.render(window, this.camera, this.scene, this.sceneChanged);
         this.hud.render(window);
     }
 

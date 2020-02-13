@@ -15,9 +15,9 @@ public class Window {
     /**
      * Field of View in Radians
      */
-    private static final float FOV = (float) Math.toRadians(60.0f);
-    private static final float Z_NEAR = 0.01f;
-    private static final float Z_FAR = 1000.0f;
+    public static final float FOV = (float) Math.toRadians(60.0f);
+    public static final float Z_NEAR = 0.01f;
+    public static final float Z_FAR = 1000.0f;
     private final String title;
     private int width;
     private int height;
@@ -216,6 +216,11 @@ public class Window {
     public Matrix4f updateProjectionMatrix() {
         float aspectRatio = (float) width / (float) height;
         return projectionMatrix.setPerspective(FOV, aspectRatio, Z_NEAR, Z_FAR);
+    }
+
+    public static Matrix4f updateProjectionMatrix(Matrix4f matrix, int width, int height) {
+        float aspectRatio = (float) width / (float) height;
+        return matrix.setPerspective(FOV, aspectRatio, Z_NEAR, Z_FAR);
     }
 
     public void restoreState() {
