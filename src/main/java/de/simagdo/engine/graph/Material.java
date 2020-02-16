@@ -1,6 +1,7 @@
 package de.simagdo.engine.graph;
 
 import de.simagdo.engine.graph.text.Texture;
+import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
 public class Material {
