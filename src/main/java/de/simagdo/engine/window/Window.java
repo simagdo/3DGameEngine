@@ -24,8 +24,8 @@ public class Window {
     private long windowHandle;
     private boolean resized;
     private boolean vSync;
-    private WindowOptions windowOptions;
-    private Matrix4f projectionMatrix;
+    private final WindowOptions windowOptions;
+    private final Matrix4f projectionMatrix;
 
     public Window(String title, int width, int height, boolean vSync, WindowOptions windowOptions) {
         this.title = title;
@@ -88,7 +88,9 @@ public class Window {
             }
         });
 
-        if (!maximized) {
+        if (maximized) {
+            glfwMaximizeWindow(this.windowHandle);
+        } else {
             // Get the resolution of the primary monitor
             GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
             // Center our window
@@ -193,10 +195,6 @@ public class Window {
 
     public WindowOptions getWindowOptions() {
         return windowOptions;
-    }
-
-    public void setWindowOptions(WindowOptions windowOptions) {
-        this.windowOptions = windowOptions;
     }
 
     public void setWindowTitle(String title) {

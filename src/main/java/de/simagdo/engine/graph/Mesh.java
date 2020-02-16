@@ -14,6 +14,7 @@ import java.util.function.Consumer;
 
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
 import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 
 public class Mesh {
@@ -50,6 +51,7 @@ public class Mesh {
             posBuffer.put(positions).flip();
             glBindBuffer(GL_ARRAY_BUFFER, vboId);
             GL15.glBufferData(GL_ARRAY_BUFFER, posBuffer, GL15.GL_STATIC_DRAW);
+            glEnableVertexAttribArray(0);
             glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
 
             // Texture coordinates VBO
@@ -59,15 +61,22 @@ public class Mesh {
             textCoordsBuffer.put(textCoords).flip();
             glBindBuffer(GL_ARRAY_BUFFER, vboId);
             GL15.glBufferData(GL_ARRAY_BUFFER, textCoordsBuffer, GL15.GL_STATIC_DRAW);
+            glEnableVertexAttribArray(1);
             glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
 
             // Vertex normals VBO
             vboId = glGenBuffers();
             this.vboIdList.add(vboId);
             vecNormalsBuffer = MemoryUtil.memAllocFloat(normals.length);
-            vecNormalsBuffer.put(normals).flip();
+            if (vecNormalsBuffer.capacity() > 0) {
+                vecNormalsBuffer.put(normals).flip();
+            } else {
+                //Create empty Structure
+                vecNormalsBuffer = MemoryUtil.memAllocFloat(positions.length);
+            }
             glBindBuffer(GL_ARRAY_BUFFER, vboId);
             GL15.glBufferData(GL_ARRAY_BUFFER, vecNormalsBuffer, GL15.GL_STATIC_DRAW);
+            glEnableVertexAttribArray(2);
             glVertexAttribPointer(2, 3, GL_FLOAT, false, 0, 0);
 
             // Weights
@@ -77,6 +86,7 @@ public class Mesh {
             weightsBuffer.put(weights).flip();
             glBindBuffer(GL_ARRAY_BUFFER, vboId);
             glBufferData(GL_ARRAY_BUFFER, weightsBuffer, GL_STATIC_DRAW);
+            glEnableVertexAttribArray(3);
             glVertexAttribPointer(3, 4, GL_FLOAT, false, 0, 0);
 
             // Joint indices
@@ -86,6 +96,7 @@ public class Mesh {
             jointIndicesBuffer.put(jointIndices).flip();
             glBindBuffer(GL_ARRAY_BUFFER, vboId);
             glBufferData(GL_ARRAY_BUFFER, jointIndicesBuffer, GL_STATIC_DRAW);
+            glEnableVertexAttribArray(4);
             glVertexAttribPointer(4, 4, GL_FLOAT, false, 0, 0);
 
             // Index VBO
@@ -117,6 +128,14 @@ public class Mesh {
             if (indicesBuffer != null) {
                 MemoryUtil.memFree(indicesBuffer);
             }
+        }
+    }
+
+    private void calculateBoundingRadius(float[] positions) {
+        int length = positions.length;
+        this.boundingRadius = 0;
+        for (float pos : positions) {
+            this.boundingRadius = Math.max(Math.abs(pos), this.boundingRadius);
         }
     }
 
@@ -188,21 +207,11 @@ public class Mesh {
 
         // Draw the mesh
         GL30.glBindVertexArray(this.getVaoId());
-        GL20.glEnableVertexAttribArray(0);
-        GL20.glEnableVertexAttribArray(1);
-        GL20.glEnableVertexAttribArray(2);
-        GL20.glEnableVertexAttribArray(3);
-        GL20.glEnableVertexAttribArray(4);
 
     }
 
     protected void endRender() {
         //Restore State
-        GL20.glDisableVertexAttribArray(0);
-        GL20.glDisableVertexAttribArray(1);
-        GL20.glDisableVertexAttribArray(2);
-        GL20.glDisableVertexAttribArray(3);
-        GL20.glDisableVertexAttribArray(4);
         GL30.glBindVertexArray(0);
 
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
@@ -218,7 +227,7 @@ public class Mesh {
         }
 
         // Delete the text
-        Texture texture = material.getTexture();
+        Texture texture = this.material != null ? material.getTexture() : null;
         if (texture != null) {
             texture.cleanUp();
         }
@@ -229,7 +238,6 @@ public class Mesh {
     }
 
     public void deleteBuffers() {
-        GL20.glDisableVertexAttribArray(0);
 
         //Delete the VBOs
         glBindBuffer(GL_ARRAY_BUFFER, 0);

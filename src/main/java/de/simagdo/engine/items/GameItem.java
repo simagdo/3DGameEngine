@@ -16,7 +16,7 @@ public class GameItem {
     private boolean disableFrustumCulling;
 
     public GameItem() {
-        this.position = new Vector3f(0, 0, 0);
+        this.position = new Vector3f();
         this.scale = 1;
         this.rotation = new Quaternionf();
         this.textPos = 0;
