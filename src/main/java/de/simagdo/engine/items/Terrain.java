@@ -2,6 +2,7 @@ package de.simagdo.engine.items;
 
 import de.simagdo.engine.graph.HeightMapMesh;
 import de.simagdo.engine.graph.text.Texture;
+import de.simagdo.utils.Utils;
 import org.joml.Vector3f;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
@@ -13,6 +14,7 @@ import java.nio.IntBuffer;
 import java.nio.file.Paths;
 
 import static org.lwjgl.stb.STBImage.*;
+import static org.lwjgl.system.MemoryStack.stackPush;
 
 public class Terrain {
 
@@ -31,54 +33,48 @@ public class Terrain {
      * @param scale         The scale to be applied to each terrain block
      * @param minY          The minimum y value, before scaling, of each terrain block
      * @param maxY          The maximum y value, before scaling, of each terrain block
-     * @param heightMapFile Where the HeightMap is located
-     * @param textureFile   Which will be used
+     * @param heightMapFile
+     * @param textureFile
      * @param textInc
      * @throws Exception
      */
     public Terrain(int terrainSize, float scale, float minY, float maxY, String heightMapFile, String textureFile, int textInc) throws Exception {
-        this.gameItems = new GameItem[terrainSize * terrainSize];
         this.terrainSize = terrainSize;
+        gameItems = new GameItem[terrainSize * terrainSize];
 
-        ByteBuffer buffer;
-        int width;
-        int height;
-        try (MemoryStack stack = MemoryStack.stackPush()) {
+        try (MemoryStack stack = stackPush()) {
             IntBuffer w = stack.mallocInt(1);
             IntBuffer h = stack.mallocInt(1);
-            IntBuffer channels = stack.mallocInt(1);
-            URL url = Texture.class.getResource(heightMapFile);
-            File file = Paths.get(url.toURI()).toFile();
-            String filePath = file.getAbsolutePath();
-            buffer = stbi_load(filePath, w, h, channels, 4);
-            if (buffer == null)
-                throw new Exception("Image file[" + filePath + "] not loaded: " + stbi_failure_reason());
-            width = w.get();
-            height = h.get();
-        }
+            IntBuffer avChannels = stack.mallocInt(1);
 
-        //The number of Vertices per Column and Row
-        this.verticesPerRow = width - 1;
-        this.verticesPerCol = height - 1;
+            // Load image data
+            ByteBuffer imageData = Utils.ioResourceToByteBuffer(heightMapFile, 1024);
 
-        this.heightMapMesh = new HeightMapMesh(minY, maxY, buffer, width, height, textureFile, textInc);
-        this.boundingBoxes = new Box2D[this.terrainSize][this.terrainSize];
+            // Decode texture image into a byte buffer
+            ByteBuffer decodedImage = stbi_load_from_memory(imageData, w, h, avChannels, 4);
+            int width = w.get();
+            int height = h.get();
 
-        for (int row = 0; row < terrainSize; row++) {
-            for (int col = 0; col < terrainSize; col++) {
-                float xDisplacement = (col - ((float) terrainSize - 1) / (float) 2) * scale * HeightMapMesh.getXLength();
-                float zDisplacement = (row - ((float) terrainSize - 1) / (float) 2) * scale * HeightMapMesh.getZLength();
+            // The number of vertices per column and row
+            verticesPerCol = width - 1;
+            verticesPerRow = height - 1;
 
-                GameItem terrainBlock = new GameItem(this.heightMapMesh.getMesh());
-                terrainBlock.setScale(scale);
-                terrainBlock.setPosition(xDisplacement, 0, zDisplacement);
-                this.gameItems[row * terrainSize + col] = terrainBlock;
-                this.boundingBoxes[row][col] = this.getBoundingBox(terrainBlock);
+            heightMapMesh = new HeightMapMesh(minY, maxY, decodedImage, width, height, textureFile, textInc);
+            boundingBoxes = new Box2D[terrainSize][terrainSize];
+            for (int row = 0; row < terrainSize; row++) {
+                for (int col = 0; col < terrainSize; col++) {
+                    float xDisplacement = (col - ((float) terrainSize - 1) / (float) 2) * scale * HeightMapMesh.getXLength();
+                    float zDisplacement = (row - ((float) terrainSize - 1) / (float) 2) * scale * HeightMapMesh.getZLength();
+
+                    GameItem terrainBlock = new GameItem(heightMapMesh.getMesh());
+                    terrainBlock.setScale(scale);
+                    terrainBlock.setPosition(xDisplacement, 0, zDisplacement);
+                    gameItems[row * terrainSize + col] = terrainBlock;
+
+                    boundingBoxes[row][col] = getBoundingBox(terrainBlock);
+                }
             }
         }
-
-        stbi_image_free(buffer);
-
     }
 
     private Box2D getBoundingBox(GameItem terrainBlock) {

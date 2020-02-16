@@ -11,7 +11,7 @@ public class Fog {
 
     public Fog() {
         this.active = false;
-        this.colour = new Vector3f(0, 0, 0);
+        this.colour = new Vector3f();
         this.density = 0;
     }
 

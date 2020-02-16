@@ -12,13 +12,13 @@ public class MainComponent {
             boolean vSync = true;
             IGameLogic gameLogic = new DummyGame();
             WindowOptions windowOptions = new WindowOptions();
-            windowOptions.cullFace = true;
+            windowOptions.cullFace = false;
             windowOptions.showFPS = true;
             windowOptions.compatibleProfile = true;
             windowOptions.antialiasing = true;
-            windowOptions.frustumCulling = true;
+            windowOptions.frustumCulling = false;
             GameEngine engine = new GameEngine("Game", 800, 600, vSync, windowOptions, gameLogic);
-            engine.start();
+            engine.run();
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(-1);

@@ -2,7 +2,7 @@ package de.simagdo.engine.graph.shadow;
 
 import de.simagdo.engine.graph.Mesh;
 import de.simagdo.engine.graph.ShaderProgram;
-import de.simagdo.engine.loaders.obj.OBJLoader;
+import de.simagdo.engine.loaders.assimp.StaticMeshesLoader;
 import de.simagdo.engine.window.Window;
 import de.simagdo.utils.Utils;
 
@@ -30,7 +30,7 @@ public class ShadowTestRenderer {
             testShaderProgram.createUniform("texture_sampler[" + i + "]");
         }
 
-        this.quadMesh = OBJLoader.loadMesh("/models/quad.obj");
+        this.quadMesh = StaticMeshesLoader.load("/models/quad.obj", "")[0];
     }
 
     public void renderTest(ShadowBuffer shadowMap) {

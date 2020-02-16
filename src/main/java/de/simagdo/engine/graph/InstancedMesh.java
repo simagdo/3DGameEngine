@@ -44,6 +44,7 @@ public class InstancedMesh extends Mesh {
         for (int i = 0; i < 4; i++) {
             glVertexAttribPointer(start, 4, GL_FLOAT, false, INSTANCE_SIZE_BYTES, strideStart);
             glVertexAttribDivisor(start, 1);
+            glEnableVertexAttribArray(start);
             start++;
             strideStart += VECTOR4F_SIZE_BYTES;
         }
@@ -51,12 +52,14 @@ public class InstancedMesh extends Mesh {
         //Texture offsets
         glVertexAttribPointer(start, 2, GL_FLOAT, false, INSTANCE_SIZE_BYTES, strideStart);
         glVertexAttribDivisor(start, 1);
+        glEnableVertexAttribArray(start);
         strideStart += FLOAT_SIZE_BYTES * 2;
         start++;
 
         //Selected or scaling (for particles)
         glVertexAttribPointer(start, 1, GL_FLOAT, false, INSTANCE_SIZE_BYTES, strideStart);
         glVertexAttribDivisor(start, 1);
+        glEnableVertexAttribArray(start);
         //start++;
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -95,7 +98,7 @@ public class InstancedMesh extends Mesh {
     }
 
     public void renderListInstanced(List<GameItem> gameItems, Transformation transformation, Matrix4f viewMatrix) {
-        this.renderListInstanced(gameItems, false, transformation, viewMatrix);
+        renderListInstanced(gameItems, false, transformation, viewMatrix);
     }
 
     public void renderListInstanced(List<GameItem> gameItems, boolean billBoard, Transformation transformation, Matrix4f viewMatrix) {
@@ -106,7 +109,7 @@ public class InstancedMesh extends Mesh {
         for (int i = 0; i < length; i += chunkSize) {
             int end = Math.min(length, i + chunkSize);
             List<GameItem> subList = gameItems.subList(i, end);
-            this.renderChunkInstanced(subList, billBoard, transformation, viewMatrix);
+            renderChunkInstanced(subList, billBoard, transformation, viewMatrix);
         }
 
         this.endRender();
@@ -117,35 +120,35 @@ public class InstancedMesh extends Mesh {
 
         int i = 0;
 
-        Texture texture = this.getMaterial().getTexture();
+        Texture text = getMaterial().getTexture();
         for (GameItem gameItem : gameItems) {
             Matrix4f modelMatrix = transformation.buildModelMatrix(gameItem);
             if (viewMatrix != null && billBoard) {
                 viewMatrix.transpose3x3(modelMatrix);
             }
-            modelMatrix.get(INSTANCE_SIZE_FLOATS * i, this.instanceDataBuffer);
-
-            if (texture != null) {
-                int col = gameItem.getTextPos() % texture.getNumCols();
-                int row = gameItem.getTextPos() / texture.getNumCols();
-                float textXOffset = (float) col / texture.getNumCols();
-                float textYOffset = (float) row / texture.getNumRows();
+            modelMatrix.get(INSTANCE_SIZE_FLOATS * i, instanceDataBuffer);
+            if (text != null) {
+                int col = gameItem.getTextPos() % text.getNumCols();
+                int row = gameItem.getTextPos() / text.getNumCols();
+                float textXOffset = (float) col / text.getNumCols();
+                float textYOffset = (float) row / text.getNumRows();
                 int buffPos = INSTANCE_SIZE_FLOATS * i + MATRIX_SIZE_FLOATS;
                 this.instanceDataBuffer.put(buffPos, textXOffset);
                 this.instanceDataBuffer.put(buffPos + 1, textYOffset);
             }
 
-            //Selected Data or scaling for billboard
+            // Selected data or scaling for billboard
             int buffPos = INSTANCE_SIZE_FLOATS * i + MATRIX_SIZE_FLOATS + 2;
             this.instanceDataBuffer.put(buffPos, billBoard ? gameItem.getScale() : gameItem.isSelected() ? 1 : 0);
 
             i++;
         }
 
-        glBindBuffer(GL_ARRAY_BUFFER, this.instanceDataVBO);
-        glBufferData(GL_ARRAY_BUFFER, this.instanceDataBuffer, GL_DYNAMIC_READ);
+        glBindBuffer(GL_ARRAY_BUFFER, instanceDataVBO);
+        glBufferData(GL_ARRAY_BUFFER, instanceDataBuffer, GL_DYNAMIC_READ);
 
-        glDrawElementsInstanced(GL_TRIANGLES, getVertexCount(), GL_UNSIGNED_INT, 0, gameItems.size());
+        glDrawElementsInstanced(
+                GL_TRIANGLES, getVertexCount(), GL_UNSIGNED_INT, 0, gameItems.size());
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }

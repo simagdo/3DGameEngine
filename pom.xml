@@ -9,7 +9,7 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <lwjgl.version>3.1.2</lwjgl.version>
+        <lwjgl.version>3.2.1</lwjgl.version>
         <lwjgl.natives>natives-windows</lwjgl.natives>
         <native.target>natives-windows</native.target>
     </properties>
@@ -293,8 +293,8 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.8.1</version>
                     <configuration>
-                        <source>${java.version}</source>
-                        <target>${java.version}</target>
+                        <source>1.8</source>
+                        <target>1.8</target>
                     </configuration>
                 </plugin>
             </plugins>

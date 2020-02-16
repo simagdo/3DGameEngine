@@ -13,7 +13,7 @@ public class AnimatedVertex {
 
     public AnimatedVertex() {
         super();
-        this.normal = new Vector3f(0, 0, 0);
+        this.normal = new Vector3f();
     }
 
 }

@@ -1,14 +1,13 @@
 package de.simagdo.engine.sound;
 
 import org.joml.Vector3f;
-import org.lwjgl.openal.AL10;
 
 import static org.lwjgl.openal.AL10.*;
 
 public class SoundListener {
 
     public SoundListener() {
-        this(new Vector3f(0, 0, 0));
+        this(new Vector3f());
     }
 
     public SoundListener(Vector3f position) {

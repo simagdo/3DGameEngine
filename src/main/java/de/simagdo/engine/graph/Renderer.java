@@ -330,7 +330,7 @@ public class Renderer {
         Map<Mesh, List<GameItem>> mapMeshes = scene.getMeshMap();
         for (Mesh mesh : mapMeshes.keySet()) {
 
-            Texture text = mesh.getMaterial().getTexture();
+            Texture text = mesh.getMaterial() != null ? mesh.getMaterial().getTexture() : null;
             if (text != null) {
                 sceneShaderProgram.setUniform("numCols", text.getNumCols());
                 sceneShaderProgram.setUniform("numRows", text.getNumRows());
