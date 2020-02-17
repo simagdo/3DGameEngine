@@ -24,7 +24,6 @@ public class StaticMeshesLoader {
     public static Mesh[] load(String resourcePath, String texturesDir, int flags) throws Exception {
 
         resourcePath = StaticMeshesLoader.class.getClassLoader().getResource(resourcePath).getPath();
-
         if (resourcePath.startsWith("/")) resourcePath = resourcePath.substring(1);
 
         AIScene aiScene = aiImportFile(resourcePath, flags);
