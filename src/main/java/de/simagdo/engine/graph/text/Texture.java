@@ -78,7 +78,7 @@ public class Texture {
             // Generate Mip Map
             glGenerateMipmap(GL_TEXTURE_2D);
 
-            stbi_image_free(imageData);
+            stbi_image_free(decodedImage);
         }
     }
 

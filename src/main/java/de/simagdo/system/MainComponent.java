@@ -18,7 +18,7 @@ public class MainComponent {
             windowOptions.antialiasing = true;
             windowOptions.frustumCulling = false;
             GameEngine engine = new GameEngine("Game", 800, 600, vSync, windowOptions, gameLogic);
-            engine.run();
+            engine.start();
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(-1);

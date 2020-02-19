@@ -27,11 +27,8 @@ public class AnimatedFrame {
         return this.jointMatrices;
     }
 
-    public void setMatrix(int pos, Matrix4f localJointMatrix, Matrix4f invJointMatrix) {
-        this.localJointMatrices[pos] = localJointMatrix;
-        Matrix4f mat = new Matrix4f(localJointMatrix);
-        mat.mul(invJointMatrix);
-        this.jointMatrices[pos] = mat;
+    public void setMatrix(int pos, Matrix4f jointMatrix) {
+        this.jointMatrices[pos] = jointMatrix;
     }
 
 }

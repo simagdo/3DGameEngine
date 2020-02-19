@@ -7,7 +7,6 @@ import org.joml.Vector4f;
 public class Material {
 
     public static final Vector4f DEFAULT_COLOUR = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
-    private Vector4f ambientColour;
     private Vector4f diffuseColour;
     private Vector4f specularColour;
     private float reflectance;
@@ -16,7 +15,6 @@ public class Material {
     private float shininess;
 
     public Material() {
-        this.ambientColour = DEFAULT_COLOUR;
         this.diffuseColour = DEFAULT_COLOUR;
         this.specularColour = DEFAULT_COLOUR;
         this.texture = null;
@@ -24,23 +22,22 @@ public class Material {
     }
 
     public Material(Vector4f colour, float reflectance) {
-        this(colour, colour, colour, null, reflectance);
+        this(colour, colour, null, reflectance);
     }
 
     public Material(Texture texture) {
-        this(DEFAULT_COLOUR, DEFAULT_COLOUR, DEFAULT_COLOUR, texture, 0);
+        this(DEFAULT_COLOUR, DEFAULT_COLOUR, texture, 0);
     }
 
     public Material(Texture texture, float reflectance) {
-        this(DEFAULT_COLOUR, DEFAULT_COLOUR, DEFAULT_COLOUR, texture, reflectance);
+        this(DEFAULT_COLOUR, DEFAULT_COLOUR, texture, reflectance);
     }
 
-    public Material(Vector4f ambientColour, Vector4f diffuseColour, Vector4f specularColour, float reflectance) {
-        this(ambientColour, diffuseColour, specularColour, null, reflectance);
+    public Material(Vector4f diffuseColour, Vector4f specularColour, float reflectance) {
+        this(diffuseColour, specularColour, null, reflectance);
     }
 
-    public Material(Vector4f ambientColour, Vector4f diffuseColour, Vector4f specularColour, Texture texture, float reflectance) {
-        this.ambientColour = ambientColour;
+    public Material(Vector4f diffuseColour, Vector4f specularColour, Texture texture, float reflectance) {
         this.diffuseColour = diffuseColour;
         this.specularColour = specularColour;
         this.texture = texture;
@@ -49,14 +46,6 @@ public class Material {
 
     public static Vector4f getDefaultColour() {
         return DEFAULT_COLOUR;
-    }
-
-    public Vector4f getAmbientColour() {
-        return this.ambientColour;
-    }
-
-    public void setAmbientColour(Vector4f ambientColour) {
-        this.ambientColour = ambientColour;
     }
 
     public Vector4f getDiffuseColour() {

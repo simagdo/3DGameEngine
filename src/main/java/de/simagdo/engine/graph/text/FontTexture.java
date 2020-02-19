@@ -13,7 +13,6 @@ import java.util.Map;
 public class FontTexture {
 
     private static final String IMAGE_FORMAT = "png";
-    private static final int CHAR_PADDING = 2;
     private final String charSetName;
     private final Font font;
     private final Map<Character, CharInfo> charMap;
@@ -43,18 +42,18 @@ public class FontTexture {
         // Get the font metrics for each character for the selected font by using image
         BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2D = img.createGraphics();
-        g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2D.setFont(font);
         FontMetrics fontMetrics = g2D.getFontMetrics();
 
         String allChars = getAllAvailableChars(charSetName);
         this.width = 0;
-        this.height = fontMetrics.getHeight();
+        this.height = 0;
         for (char c : allChars.toCharArray()) {
             // Get the size for each character and update global image size
             CharInfo charInfo = new CharInfo(width, fontMetrics.charWidth(c));
             charMap.put(c, charInfo);
-            width += charInfo.getWidth() + CHAR_PADDING;
+            width += charInfo.getWidth();
+            height += Math.max(height, fontMetrics.getHeight());
         }
         g2D.dispose();
 
@@ -65,14 +64,10 @@ public class FontTexture {
         g2D.setFont(font);
         fontMetrics = g2D.getFontMetrics();
         g2D.setColor(Color.WHITE);
-        int startX = 0;
-        for (char c : allChars.toCharArray()) {
-            CharInfo charInfo = charMap.get(c);
-            g2D.drawString("" + c, startX, fontMetrics.getAscent());
-            startX += charInfo.getWidth() + CHAR_PADDING;
-        }
+        g2D.drawString(allChars, 0, fontMetrics.getAscent());
         g2D.dispose();
 
+        //Dump Image to a Byte Buffer
         ByteBuffer buf = null;
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             ImageIO.write(img, IMAGE_FORMAT, out);

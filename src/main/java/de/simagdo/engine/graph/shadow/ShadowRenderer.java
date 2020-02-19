@@ -58,8 +58,8 @@ public class ShadowRenderer {
 
     private void setupDepthShader() throws Exception {
         this.depthShaderProgram = new ShaderProgram();
-        this.depthShaderProgram.createVertexShader(Utils.loadResource("/shaders/depth_shaders/depth_vertex.vs"));
-        this.depthShaderProgram.createFragmentShader(Utils.loadResource("/shaders/depth_shaders/depth_fragment.fs"));
+        this.depthShaderProgram.createVertexShader(Utils.loadResource("/shaders/depth/depth_vertex.vs"));
+        this.depthShaderProgram.createFragmentShader(Utils.loadResource("/shaders/depth/depth_fragment.fs"));
         this.depthShaderProgram.link();
 
         this.depthShaderProgram.createUniform("isInstanced");
@@ -79,7 +79,7 @@ public class ShadowRenderer {
     }
 
     public void render(Window window, Scene scene, Camera camera, Transformation transformation, Renderer renderer) {
-        update(window, camera.getViewMatrix(), scene);
+        this.update(window, camera.getViewMatrix(), scene);
 
         // Setup view port to match the texture size
         glBindFramebuffer(GL_FRAMEBUFFER, shadowBuffer.getDepthMapFBO());
@@ -119,7 +119,7 @@ public class ShadowRenderer {
                         depthShaderProgram.setUniform("modelNonInstancedMatrix", modelMatrix);
                         if (gameItem instanceof AnimatedGameItem) {
                             AnimatedGameItem animGameItem = (AnimatedGameItem) gameItem;
-                            AnimatedFrame frame = animGameItem.getCurrentFrame();
+                            AnimatedFrame frame = animGameItem.getCurrentAnimation().getCurrentFrame();
                             depthShaderProgram.setUniform("jointsMatrix", frame.getJointMatrices());
                         }
                     }

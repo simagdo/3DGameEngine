@@ -4,10 +4,12 @@ import de.simagdo.engine.IGameLogic;
 import de.simagdo.engine.MouseInput;
 import de.simagdo.engine.Scene;
 import de.simagdo.engine.SceneLight;
+import de.simagdo.engine.graph.Attenuation;
 import de.simagdo.engine.graph.Mesh;
 import de.simagdo.engine.graph.Renderer;
 import de.simagdo.engine.graph.camera.Camera;
 import de.simagdo.engine.graph.lights.DirectionalLight;
+import de.simagdo.engine.graph.lights.PointLight;
 import de.simagdo.engine.graph.weather.Fog;
 import de.simagdo.engine.items.GameItem;
 import de.simagdo.engine.items.SkyBox;
@@ -32,6 +34,7 @@ public class DummyGame implements IGameLogic {
     private float angleInc;
     private boolean firstTime;
     private boolean sceneChanged;
+    private Vector3f pointLightPos;
 
     private enum Sounds {
         FIRE
@@ -101,6 +104,13 @@ public class DummyGame implements IGameLogic {
         Vector3f lightPosition = new Vector3f(0, 1, 1);
         DirectionalLight directionalLight = new DirectionalLight(new Vector3f(1, 1, 1), lightPosition, lightIntensity);
         sceneLight.setDirectionalLight(directionalLight);
+
+        pointLightPos = new Vector3f(0.0f, 25.0f, 0.0f);
+        Vector3f pointLightColor = new Vector3f(0.f, 1.0f, 0.0f);
+        Attenuation attenuation = new Attenuation(1, 0.0f, 0);
+        PointLight pointLight = new PointLight(pointLightColor, pointLightPos, lightIntensity, attenuation);
+        sceneLight.setPointLights(new PointLight[]{pointLight});
+
     }
 
     @Override
@@ -137,7 +147,13 @@ public class DummyGame implements IGameLogic {
         } else {
             this.angleInc = 0;
         }
-
+        if (window.isKeyPressed(GLFW_KEY_UP)) {
+            this.sceneChanged = true;
+            this.pointLightPos.y += 0.5f;
+        } else if (window.isKeyPressed(GLFW_KEY_DOWN)) {
+            this.sceneChanged = true;
+            this.pointLightPos.y -= 0.5f;
+        }
     }
 
     @Override
