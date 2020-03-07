@@ -5,50 +5,30 @@ import de.simagdo.engine.items.GameItem;
 import org.joml.Matrix4f;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class AnimatedGameItem extends GameItem {
 
-    private int currentFrame;
-    private List<AnimatedFrame> frames;
-    private List<Matrix4f> invJointMatrices;
+    private Map<String, Animation> animations;
+    private Animation currentAnimation;
 
-    public AnimatedGameItem(Mesh[] meshes, List<AnimatedFrame> frames, List<Matrix4f> invJointMatrices) {
+    public AnimatedGameItem(Mesh[] meshes, Map<String, Animation> animations) {
         super(meshes);
-        this.frames = frames;
-        this.invJointMatrices = invJointMatrices;
-        this.currentFrame = 0;
+        this.animations = animations;
+        Optional<Map.Entry<String, Animation>> entry = animations.entrySet().stream().findFirst();
+        currentAnimation = entry.map(Map.Entry::getValue).orElse(null);
     }
 
-    public List<AnimatedFrame> getFrames() {
-        return this.frames;
+    public Animation getAnimation(String name) {
+        return animations.get(name);
     }
 
-    public void setFrames(List<AnimatedFrame> frames) {
-        this.frames = frames;
+    public Animation getCurrentAnimation() {
+        return currentAnimation;
     }
 
-    public AnimatedFrame getCurrentFrame() {
-        return this.frames.get(this.currentFrame);
-    }
-
-    public AnimatedFrame getNextFrame() {
-        int nextFrame = this.currentFrame + 1;
-        if (nextFrame > frames.size() - 1) {
-            nextFrame = 0;
-        }
-        return this.frames.get(nextFrame);
-    }
-
-    public void nextFrame() {
-        int nextFrame = this.currentFrame + 1;
-        if (nextFrame > frames.size() - 1) {
-            this.currentFrame = 0;
-        } else {
-            this.currentFrame = nextFrame;
-        }
-    }
-
-    public List<Matrix4f> getInvJointMatrices() {
-        return this.invJointMatrices;
+    public void setCurrentAnimation(Animation currentAnimation) {
+        this.currentAnimation = currentAnimation;
     }
 }

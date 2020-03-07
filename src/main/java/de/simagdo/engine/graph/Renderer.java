@@ -5,7 +5,6 @@ import de.simagdo.engine.graph.animation.AnimatedFrame;
 import de.simagdo.engine.graph.animation.AnimatedGameItem;
 import de.simagdo.engine.graph.camera.Camera;
 import de.simagdo.engine.graph.lights.DirectionalLight;
-import de.simagdo.engine.graph.lights.OrthoCoords;
 import de.simagdo.engine.graph.lights.PointLight;
 import de.simagdo.engine.graph.lights.SpotLight;
 import de.simagdo.engine.graph.particles.IParticleEmitter;
@@ -27,9 +26,6 @@ import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE2;
-import static org.lwjgl.opengl.GL13.glActiveTexture;
-import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
-import static org.lwjgl.opengl.GL30.glBindFramebuffer;
 
 public class Renderer {
 
@@ -62,8 +58,8 @@ public class Renderer {
     private void setupSceneShader() throws Exception {
         // Create shader
         this.sceneShaderProgram = new ShaderProgram();
-        this.sceneShaderProgram.createVertexShader(Utils.loadResource("/shaders/scene_shaders/scene_vertex.vs"));
-        this.sceneShaderProgram.createFragmentShader(Utils.loadResource("/shaders/scene_shaders/scene_fragment.fs"));
+        this.sceneShaderProgram.createVertexShader(Utils.loadResource("/shaders/scene/scene_vertex.vs"));
+        this.sceneShaderProgram.createFragmentShader(Utils.loadResource("/shaders/scene/scene_fragment.fs"));
         this.sceneShaderProgram.link();
 
         // Create uniforms for View and projection matrices and text
@@ -106,8 +102,8 @@ public class Renderer {
 
     private void setupSkyBoxShader() throws Exception {
         this.skyBoxShaderProgram = new ShaderProgram();
-        this.skyBoxShaderProgram.createVertexShader(Utils.loadResource("/shaders/skybox_shaders/sb_vertex.vs"));
-        this.skyBoxShaderProgram.createFragmentShader(Utils.loadResource("/shaders/skybox_shaders/sb_fragment.fs"));
+        this.skyBoxShaderProgram.createVertexShader(Utils.loadResource("/shaders/skybox/sb_vertex.vs"));
+        this.skyBoxShaderProgram.createFragmentShader(Utils.loadResource("/shaders/skybox/sb_fragment.fs"));
         this.skyBoxShaderProgram.link();
 
         this.skyBoxShaderProgram.createUniform("projectionMatrix");
@@ -120,8 +116,8 @@ public class Renderer {
 
     private void setupParticlesShader() throws Exception {
         this.particlesShaderProgram = new ShaderProgram();
-        this.particlesShaderProgram.createVertexShader(Utils.loadResource("/shaders/particle_shaders/particles_vertex.vs"));
-        this.particlesShaderProgram.createFragmentShader(Utils.loadResource("/shaders/particle_shaders/particles_fragment.fs"));
+        this.particlesShaderProgram.createVertexShader(Utils.loadResource("/shaders/particle/particles_vertex.vs"));
+        this.particlesShaderProgram.createFragmentShader(Utils.loadResource("/shaders/particle/particles_fragment.fs"));
         this.particlesShaderProgram.link();
 
         this.particlesShaderProgram.createUniform("viewMatrix");
@@ -347,7 +343,7 @@ public class Renderer {
 
                         if (gameItem instanceof AnimatedGameItem) {
                             AnimatedGameItem animGameItem = (AnimatedGameItem) gameItem;
-                            AnimatedFrame frame = animGameItem.getCurrentFrame();
+                            AnimatedFrame frame = animGameItem.getCurrentAnimation().getCurrentFrame();
                             this.sceneShaderProgram.setUniform("jointsMatrix", frame.getJointMatrices());
                         }
                     }
