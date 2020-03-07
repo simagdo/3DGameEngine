@@ -88,9 +88,7 @@ public class Window {
             }
         });
 
-        if (maximized) {
-            glfwMaximizeWindow(this.windowHandle);
-        } else {
+        if (!maximized) {
             // Get the resolution of the primary monitor
             GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
             // Center our window
@@ -121,10 +119,6 @@ public class Window {
         if (this.windowOptions.showTriangles) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         }
-
-        //Support for Transparencies
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         if (this.windowOptions.cullFace) {
             glEnable(GL_CULL_FACE);

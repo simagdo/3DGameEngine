@@ -79,7 +79,7 @@ public class ShadowRenderer {
     }
 
     public void render(Window window, Scene scene, Camera camera, Transformation transformation, Renderer renderer) {
-        update(window, camera.getViewMatrix(), scene);
+        this.update(window, camera.getViewMatrix(), scene);
 
         // Setup view port to match the texture size
         glBindFramebuffer(GL_FRAMEBUFFER, shadowBuffer.getDepthMapFBO());

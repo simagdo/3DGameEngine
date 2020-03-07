@@ -23,7 +23,7 @@ public class Utils {
 
     public static String loadResource(String fileName) throws Exception {
         String result;
-        try (InputStream in = Utils.class.getResourceAsStream(fileName);
+        try (InputStream in = Class.forName(Utils.class.getName()).getResourceAsStream(fileName);
              Scanner scanner = new Scanner(in, StandardCharsets.UTF_8.name())) {
             result = scanner.useDelimiter("\\A").next();
         }
@@ -69,7 +69,7 @@ public class Utils {
         Path path = Paths.get(resource);
         if (Files.isReadable(path)) {
             try (SeekableByteChannel fc = Files.newByteChannel(path)) {
-                buffer = MemoryUtil.memAlloc((int) fc.size() + 1);
+                buffer = BufferUtils.createByteBuffer((int) fc.size() + 1);
                 while (fc.read(buffer) != -1) ;
             }
         } else {

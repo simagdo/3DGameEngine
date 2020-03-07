@@ -5,6 +5,7 @@ import de.simagdo.engine.graph.lights.PointLight;
 import de.simagdo.engine.graph.lights.SpotLight;
 import de.simagdo.engine.graph.weather.Fog;
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
@@ -55,7 +56,6 @@ public class ShaderProgram {
     }
 
     public void createMaterialUniform(String uniformName) throws Exception {
-        this.createUniform(uniformName + ".ambient");
         this.createUniform(uniformName + ".diffuse");
         this.createUniform(uniformName + ".specular");
         this.createUniform(uniformName + ".hasTexture");
@@ -64,9 +64,11 @@ public class ShaderProgram {
     }
 
     public void setUniform(String uniformName, Matrix4f value) {
-        // Dump the matrix into a float buffer
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            glUniformMatrix4fv(this.uniforms.get(uniformName), false, value.get(stack.mallocFloat(16)));
+            // Dump the matrix into a float buffer
+            FloatBuffer buffer = stack.mallocFloat(16);
+            value.get(buffer);
+            glUniformMatrix4fv(this.uniforms.get(uniformName), false, buffer);
         }
     }
 
@@ -109,7 +111,6 @@ public class ShaderProgram {
     }
 
     public void setUniform(String uniformName, Material material) {
-        this.setUniform(uniformName + ".ambient", material.getAmbientColour());
         this.setUniform(uniformName + ".diffuse", material.getDiffuseColour());
         this.setUniform(uniformName + ".specular", material.getSpecularColour());
         this.setUniform(uniformName + ".hasTexture", material.isTextured() ? 1 : 0);
@@ -201,6 +202,14 @@ public class ShaderProgram {
 
     public void setUniform(String uniformName, SpotLight spotLight, int pos) {
         this.setUniform(uniformName + "[" + pos + "]", spotLight);
+    }
+
+    public void setUniform(String uniformName, float x, float y) {
+        glUniform2f(this.uniforms.get(uniformName), x, y);
+    }
+
+    public void setUniform(String uniformName, Vector2f value) {
+        glUniform2f(this.uniforms.get(uniformName), value.x, value.y);
     }
 
     protected int createShader(String shaderCode, int shaderType) throws Exception {

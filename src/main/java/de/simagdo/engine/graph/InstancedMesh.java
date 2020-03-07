@@ -44,7 +44,6 @@ public class InstancedMesh extends Mesh {
         for (int i = 0; i < 4; i++) {
             glVertexAttribPointer(start, 4, GL_FLOAT, false, INSTANCE_SIZE_BYTES, strideStart);
             glVertexAttribDivisor(start, 1);
-            glEnableVertexAttribArray(start);
             start++;
             strideStart += VECTOR4F_SIZE_BYTES;
         }
@@ -52,14 +51,12 @@ public class InstancedMesh extends Mesh {
         //Texture offsets
         glVertexAttribPointer(start, 2, GL_FLOAT, false, INSTANCE_SIZE_BYTES, strideStart);
         glVertexAttribDivisor(start, 1);
-        glEnableVertexAttribArray(start);
         strideStart += FLOAT_SIZE_BYTES * 2;
         start++;
 
         //Selected or scaling (for particles)
         glVertexAttribPointer(start, 1, GL_FLOAT, false, INSTANCE_SIZE_BYTES, strideStart);
         glVertexAttribDivisor(start, 1);
-        glEnableVertexAttribArray(start);
         //start++;
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -98,7 +95,7 @@ public class InstancedMesh extends Mesh {
     }
 
     public void renderListInstanced(List<GameItem> gameItems, Transformation transformation, Matrix4f viewMatrix) {
-        renderListInstanced(gameItems, false, transformation, viewMatrix);
+        this.renderListInstanced(gameItems, false, transformation, viewMatrix);
     }
 
     public void renderListInstanced(List<GameItem> gameItems, boolean billBoard, Transformation transformation, Matrix4f viewMatrix) {
