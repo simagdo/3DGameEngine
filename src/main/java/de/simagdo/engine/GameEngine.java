@@ -1,7 +1,12 @@
 package de.simagdo.engine;
 
+import de.simagdo.engine.inputsOutputs.stateControl.EmptyState;
+import de.simagdo.engine.inputsOutputs.stateControl.StateManager;
+import de.simagdo.engine.inputsOutputs.userInput.Keyboard;
+import de.simagdo.engine.inputsOutputs.userInput.Mouse;
 import de.simagdo.engine.window.Window;
 import de.simagdo.engine.window.WindowOptions;
+import de.simagdo.game.gui.main.GameEngineUI;
 
 public class GameEngine implements Runnable {
 
@@ -15,6 +20,10 @@ public class GameEngine implements Runnable {
     private int fps;
     private String windowTitle;
     private final Thread gameLoopThread;
+    private GameEngineUI gameEngineUI;
+    private final Keyboard keyboard;
+    private final Mouse mouse;
+    private final StateManager stateManager = new StateManager(new EmptyState(), new EmptyState());
 
     public GameEngine(String windowTitle, boolean vSync, WindowOptions windowOptions, IGameLogic gameLogic) throws Exception {
         this(windowTitle, 0, 0, vSync, windowOptions, gameLogic);
@@ -27,6 +36,9 @@ public class GameEngine implements Runnable {
         this.gameLogic = gameLogic;
         timer = new Timer();
         this.mouseInput = new MouseInput();
+        this.gameEngineUI = new GameEngineUI(this);
+        this.keyboard = new Keyboard();
+        this.mouse = new Mouse(this.window);
     }
 
     public void start() {
@@ -50,11 +62,18 @@ public class GameEngine implements Runnable {
         }
     }
 
+    public void close() {
+        this.gameLoopThread.stop();
+    }
+
     protected void init() throws Exception {
         this.window.init();
         this.timer.init();
         this.mouseInput.init(this.window);
         this.gameLogic.init(this.window);
+        System.out.println(this.window.getWindowHandle());
+        this.keyboard.init(this.window);
+        this.mouse.init();
         this.lastFPS = this.timer.getTime();
         this.fps = 0;
     }
@@ -102,6 +121,7 @@ public class GameEngine implements Runnable {
 
     protected void update(float interval) {
         this.gameLogic.update(interval, this.mouseInput, this.window);
+        this.gameEngineUI.update();
     }
 
     protected void render() {
@@ -113,6 +133,18 @@ public class GameEngine implements Runnable {
         fps++;
         this.gameLogic.render(this.window);
         this.window.update();
+    }
+
+    public Keyboard getKeyboard() {
+        return keyboard;
+    }
+
+    public Mouse getMouse() {
+        return mouse;
+    }
+
+    public StateManager getStateManager() {
+        return this.stateManager;
     }
 
     protected void cleanUp() {

@@ -78,8 +78,15 @@ public class StaticMeshesLoader {
             texture = textCache.getTexture(textureFile);
         }
 
+        Vector4f ambient = Material.DEFAULT_COLOUR;
+        int result = aiGetMaterialColor(aiMaterial, AI_MATKEY_COLOR_AMBIENT, aiTextureType_NONE, 0,
+                colour);
+        if (result == 0) {
+            ambient = new Vector4f(colour.r(), colour.g(), colour.b(), colour.a());
+        }
+
         Vector4f diffuse = Material.DEFAULT_COLOUR;
-        int result = aiGetMaterialColor(aiMaterial, AI_MATKEY_COLOR_DIFFUSE, aiTextureType_NONE, 0, colour);
+        result = aiGetMaterialColor(aiMaterial, AI_MATKEY_COLOR_DIFFUSE, aiTextureType_NONE, 0, colour);
         if (result == 0) {
             diffuse = new Vector4f(colour.r(), colour.g(), colour.b(), colour.a());
         }
@@ -90,7 +97,7 @@ public class StaticMeshesLoader {
             specular = new Vector4f(colour.r(), colour.g(), colour.b(), colour.a());
         }
 
-        Material material = new Material(diffuse, specular, 1.0f);
+        Material material = new Material(ambient, diffuse, specular, 1.0f);
         material.setTexture(texture);
         materials.add(material);
     }
