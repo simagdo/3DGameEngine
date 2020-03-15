@@ -7,6 +7,7 @@ import de.simagdo.engine.inputsOutputs.userInput.Mouse;
 import de.simagdo.engine.window.Window;
 import de.simagdo.engine.window.WindowOptions;
 import de.simagdo.game.gui.main.GameEngineUI;
+import de.simagdo.game.managing.GameConfigs;
 
 public class GameEngine implements Runnable {
 
@@ -24,6 +25,10 @@ public class GameEngine implements Runnable {
     private final Keyboard keyboard;
     private final Mouse mouse;
     private final StateManager stateManager = new StateManager(new EmptyState(), new EmptyState());
+
+    public GameEngine(GameConfigs configs) throws Exception {
+        this(configs.windowTitle, configs.windowWidth, configs.windowHeight, configs.vSync, configs.windowOptions, configs.gameLogic);
+    }
 
     public GameEngine(String windowTitle, boolean vSync, WindowOptions windowOptions, IGameLogic gameLogic) throws Exception {
         this(windowTitle, 0, 0, vSync, windowOptions, gameLogic);
