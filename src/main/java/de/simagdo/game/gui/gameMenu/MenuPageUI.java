@@ -39,7 +39,7 @@ public class MenuPageUI extends UIComponent {
     private void addPlayButton(int number) {
         this.addButton("Play", number, new MouseListener() {
             @Override
-            public void eventOccured(EventData data) {
+            public void eventOccurred(EventData data) {
                 gameMenu.display(false);
             }
         });

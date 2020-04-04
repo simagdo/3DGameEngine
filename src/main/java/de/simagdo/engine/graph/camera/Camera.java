@@ -1,6 +1,11 @@
 package de.simagdo.engine.graph.camera;
 
+import de.simagdo.engine.GameEngine;
+import de.simagdo.engine.entities.Player;
 import de.simagdo.engine.graph.Transformation;
+import de.simagdo.engine.inputsOutputs.userInput.Mouse;
+import de.simagdo.engine.inputsOutputs.userInput.MouseButton;
+import de.simagdo.game.gui.main.GameManager;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -9,6 +14,13 @@ public class Camera {
     private final Vector3f position;
     private final Vector3f rotation;
     private Matrix4f viewMatrix;
+    private float pitch = 10;
+    private float yaw;
+    private float roll;
+    private float distanceFromPlayer = 50;
+    private float angleAroundPalyer = 0;
+    private Mouse mouse;
+    private Player player;
 
     public Camera() {
         this.position = new Vector3f();
@@ -19,6 +31,12 @@ public class Camera {
     public Camera(Vector3f position, Vector3f rotation) {
         this.position = position;
         this.rotation = rotation;
+    }
+
+    public Camera(Vector3f position, Vector3f rotation, GameEngine engine, Player player) {
+        this.position = position;
+        this.rotation = rotation;
+        this.player = player;
     }
 
     public Vector3f getPosition() {
@@ -70,4 +88,59 @@ public class Camera {
         this.rotation.y += offsetY;
         this.rotation.z += offsetZ;
     }
+
+    public void setPlayer(Player player) {
+        this.player = player;
+    }
+
+    public void move() {
+        if (GameManager.isInitialized()) {
+            this.calculateZoom();
+            this.calculatePitch();
+            this.calculateAngleAroundPlayer();
+            float verticalDistance = this.calculateVerticalDistance();
+            float horizontalDistance = this.calculateHorizontalChange();
+            this.calculateCameraPosition(horizontalDistance, verticalDistance);
+            this.yaw = 180 - (this.player.getPosition().y + this.angleAroundPalyer);
+        }
+    }
+
+    private void calculateZoom() {
+        float zoomLevel = GameManager.getMouse().getDx() * 0.3f;
+        this.distanceFromPlayer -= zoomLevel;
+    }
+
+    private void calculatePitch() {
+        if (GameManager.getMouse().isButtonDown(MouseButton.LEFT)) {
+            float pitchChange = GameManager.getMouse().getDy() * 0.1f;
+            this.pitch -= pitchChange;
+            System.out.println("Pitch: " + this.pitch);
+        }
+    }
+
+    private void calculateAngleAroundPlayer() {
+        if (GameManager.getMouse().isButtonDown(MouseButton.RIGHT)) {
+            float angleChange = GameManager.getMouse().getDx() * 0.3f;
+            this.angleAroundPalyer -= angleChange;
+        }
+    }
+
+    private float calculateHorizontalChange() {
+        return (float) (this.distanceFromPlayer * Math.cos(Math.toRadians(this.pitch)));
+    }
+
+    private float calculateVerticalDistance() {
+        return (float) (this.distanceFromPlayer * Math.sin(Math.toRadians(this.pitch)));
+    }
+
+    private void calculateCameraPosition(float horizontalDistance, float verticalDistance) {
+        float theta = this.player.getRotation().y + this.angleAroundPalyer;
+        float offsetX = (float) (horizontalDistance * Math.sin(Math.toRadians(theta)));
+        float offsetZ = (float) (horizontalDistance * Math.cos(Math.toRadians(theta)));
+        this.position.x = this.player.getPosition().x - offsetX;
+        this.position.y = this.player.getPosition().y + verticalDistance;
+        this.position.z = this.player.getPosition().z - offsetZ;
+        this.player.getGameItem().setPosition(this.position.x, this.position.y, this.position.z);
+    }
+
 }

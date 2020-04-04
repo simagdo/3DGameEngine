@@ -42,7 +42,7 @@ public abstract class ClickableUI extends UIComponent {
     private void fireListeners(EventData data) {
         int pointer = 0;
         while (pointer < this.listeners.size()) {
-            this.listeners.get(pointer).eventOccured(data);
+            this.listeners.get(pointer).eventOccurred(data);
             pointer++;
         }
     }

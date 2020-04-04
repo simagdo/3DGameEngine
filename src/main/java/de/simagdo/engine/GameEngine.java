@@ -1,5 +1,6 @@
 package de.simagdo.engine;
 
+import de.simagdo.engine.graph.camera.Camera;
 import de.simagdo.engine.inputsOutputs.stateControl.EmptyState;
 import de.simagdo.engine.inputsOutputs.stateControl.StateManager;
 import de.simagdo.engine.inputsOutputs.userInput.Keyboard;
@@ -25,6 +26,7 @@ public class GameEngine implements Runnable {
     private final Keyboard keyboard;
     private final Mouse mouse;
     private final StateManager stateManager = new StateManager(new EmptyState(), new EmptyState());
+    private Camera camera;
 
     public GameEngine(GameConfigs configs) throws Exception {
         this(configs.windowTitle, configs.windowWidth, configs.windowHeight, configs.vSync, configs.windowOptions, configs.gameLogic);
@@ -44,6 +46,7 @@ public class GameEngine implements Runnable {
         this.gameEngineUI = new GameEngineUI(this);
         this.keyboard = new Keyboard();
         this.mouse = new Mouse(this.window);
+        this.camera = new Camera();
     }
 
     public void start() {
@@ -126,7 +129,6 @@ public class GameEngine implements Runnable {
 
     protected void update(float interval) {
         this.gameLogic.update(interval, this.mouseInput, this.window);
-        this.gameEngineUI.update();
     }
 
     protected void render() {
@@ -150,6 +152,18 @@ public class GameEngine implements Runnable {
 
     public StateManager getStateManager() {
         return this.stateManager;
+    }
+
+    public Window getWindow() {
+        return window;
+    }
+
+    public Camera getCamera() {
+        return camera;
+    }
+
+    public void setCamera(Camera camera) {
+        this.camera = camera;
     }
 
     protected void cleanUp() {

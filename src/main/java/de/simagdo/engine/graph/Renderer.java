@@ -159,6 +159,8 @@ public class Renderer {
         //Render Particles
         this.renderParticles(window, camera, scene);
 
+        //this.renderButton(0.25f, 0.25f, 0.5f, 0.5f);
+
         //Render Cross Hair
         this.renderCrossHair(window);
     }
@@ -326,7 +328,7 @@ public class Renderer {
         Map<Mesh, List<GameItem>> mapMeshes = scene.getMeshMap();
         for (Mesh mesh : mapMeshes.keySet()) {
 
-            this.sceneShaderProgram.setUniform("material",mesh.getMaterial());
+            this.sceneShaderProgram.setUniform("material", mesh.getMaterial());
 
             Texture text = mesh.getMaterial() != null ? mesh.getMaterial().getTexture() : null;
             if (text != null) {
@@ -404,6 +406,16 @@ public class Renderer {
             glPopMatrix();
 
         }
+    }
+
+    private void renderButton(float x, float y, float width, float height) {
+        glBegin(GL_QUADS);
+        glColor3f(0.3f, 0.3f, 0.3f);
+        glVertex2f(x, y);
+        glVertex2f(x + width, y);
+        glVertex2f(x + width, y + height);
+        glVertex2f(x, y + height);
+        glEnd();
     }
 
     /**

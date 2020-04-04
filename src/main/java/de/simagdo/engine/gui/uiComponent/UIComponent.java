@@ -418,7 +418,7 @@ public abstract class UIComponent {
 
     private void initChild(UIComponent child) {
         this.children.add(child);
-        child.level = Math.max(level, child.level);
+        child.level = Math.max(this.level, child.level);
         child.calculateScreenSpacePosition(true);
         child.init();
         child.calculateTotalAlpha();
@@ -427,7 +427,7 @@ public abstract class UIComponent {
     }
 
     private void initAllChildren() {
-        for (UIComponent child : this.children) {
+        for (UIComponent child : this.childrenToAdd) {
             this.initChild(child);
         }
 

@@ -65,6 +65,10 @@ public class GameItem {
         return this.rotation;
     }
 
+    public void setRotation(float x, float y, float z) {
+        this.setRotation(new Quaternionf(x, y, z, 0));
+    }
+
     public void setRotation(Quaternionf quaternionf) {
         this.rotation.set(quaternionf);
     }

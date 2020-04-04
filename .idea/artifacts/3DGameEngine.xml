@@ -1,0 +1,15 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="3DGameEngine">
+    <output-path>$PROJECT_DIR$/out/artifacts/3DGameEngine</output-path>
+    <root id="archive" name="3DGameEngine.jar">
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/META-INF/MANIFEST.MF" />
+        <element id="module-source" name="3DGameEngine" />
+      </element>
+      <element id="module-output" name="3DGameEngine" />
+      <element id="library" level="project" name="Maven: org.lwjgl:lwjgl-opengl:3.2.1" />
+      <element id="library" level="project" name="Maven: org.lwjgl:lwjgl-opengl:natives-windows:3.2.1" />
+      <element id="library" level="project" name="Maven: org.joml:joml:1.9.19" />
+    </root>
+  </artifact>
+</component>

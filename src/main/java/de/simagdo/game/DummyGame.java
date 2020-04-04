@@ -4,6 +4,7 @@ import de.simagdo.engine.IGameLogic;
 import de.simagdo.engine.MouseInput;
 import de.simagdo.engine.Scene;
 import de.simagdo.engine.SceneLight;
+import de.simagdo.engine.entities.Player;
 import de.simagdo.engine.graph.Attenuation;
 import de.simagdo.engine.graph.Mesh;
 import de.simagdo.engine.graph.Renderer;
@@ -15,6 +16,8 @@ import de.simagdo.engine.items.GameItem;
 import de.simagdo.engine.items.SkyBox;
 import de.simagdo.engine.loaders.assimp.StaticMeshesLoader;
 import de.simagdo.engine.window.Window;
+import de.simagdo.game.gui.main.GameManager;
+import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -35,6 +38,7 @@ public class DummyGame implements IGameLogic {
     private boolean firstTime;
     private boolean sceneChanged;
     private Vector3f pointLightPos;
+    private Player player;
 
     private enum Sounds {
         FIRE
@@ -62,8 +66,15 @@ public class DummyGame implements IGameLogic {
         GameItem terrain = new GameItem(terrainMesh);
         terrain.setScale(100.0f);
 
+        //Player
+        Mesh playerMesh = StaticMeshesLoader.load("models/boblamp.md5mesh", "")[0];
+        GameItem playerGameItem = new GameItem(playerMesh);
+        playerGameItem.setScale(0.05f);
+        playerGameItem.setRotation(90, 0, 0);
+        this.player = new Player(playerGameItem, new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), 0);
+
         //Set Game Items
-        this.scene.setGameItems(new GameItem[]{house, terrain});
+        this.scene.setGameItems(new GameItem[]{terrain, playerGameItem});
 
         // Shadows
         this.scene.setRenderShadows(true);
@@ -83,11 +94,11 @@ public class DummyGame implements IGameLogic {
         //Setup Lights
         this.setupLights();
 
-        this.camera.getPosition().x = -17.0f;
-        this.camera.getPosition().y = 17.0f;
-        this.camera.getPosition().z = -30.0f;
-        this.camera.getRotation().x = 20.0f;
-        this.camera.getRotation().y = 140.0f;
+        this.camera.getPosition().x = 0.25f;
+        this.camera.getPosition().y = 6.5f;
+        this.camera.getPosition().z = 15.0f;
+        this.camera.getRotation().x = 25.0f;
+        this.camera.getRotation().y = 15.0f;
 
     }
 
@@ -115,7 +126,7 @@ public class DummyGame implements IGameLogic {
 
     @Override
     public void input(Window window, MouseInput mouseInput) {
-        this.cameraInc.set(0, 0, 0);
+        /*this.cameraInc.set(0, 0, 0);
         this.sceneChanged = false;
         if (window.isKeyPressed(GLFW_KEY_W)) {
             cameraInc.z = -1;
@@ -153,12 +164,12 @@ public class DummyGame implements IGameLogic {
         } else if (window.isKeyPressed(GLFW_KEY_DOWN)) {
             this.sceneChanged = true;
             this.pointLightPos.y -= 0.5f;
-        }
+        }*/
     }
 
     @Override
     public void update(float interval, MouseInput mouseInput, Window window) {
-        if (mouseInput.isRightButtonPressed()) {
+        /*if (mouseInput.isRightButtonPressed()) {
             //Update Camera based on mouse
             Vector2f rotVec = mouseInput.getDisplVec();
             this.camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY, 0);
@@ -166,7 +177,7 @@ public class DummyGame implements IGameLogic {
         }
 
         // Update camera position
-        this.camera.movePosition(cameraInc.x * CAMERA_POS_STEP, cameraInc.y * CAMERA_POS_STEP, cameraInc.z * CAMERA_POS_STEP);
+        this.camera.movePosition(cameraInc.x * CAMERA_POS_STEP, cameraInc.y * CAMERA_POS_STEP, cameraInc.z * CAMERA_POS_STEP);*/
 
         this.lightAngle += this.angleInc;
         if (this.lightAngle < 0) this.lightAngle = 0;
@@ -181,6 +192,9 @@ public class DummyGame implements IGameLogic {
 
         //Update View Matrix
         this.camera.updateViewMatrix();
+
+        this.player.move();
+        GameManager.getCamera().move();
 
     }
 
