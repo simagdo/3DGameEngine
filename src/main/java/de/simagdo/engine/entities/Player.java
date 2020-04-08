@@ -1,11 +1,7 @@
 package de.simagdo.engine.entities;
 
-import de.simagdo.engine.inputsOutputs.userInput.Keyboard;
 import de.simagdo.engine.items.GameItem;
-import de.simagdo.game.gui.main.GameManager;
 import org.joml.Vector3f;
-
-import static org.lwjgl.glfw.GLFW.*;
 
 public class Player extends Entity {
 
@@ -22,18 +18,13 @@ public class Player extends Entity {
     private Vector3f position;
     private Vector3f rotation;
     private float scale;
-    private GameManager gameManager;
-    private Keyboard keyboard;
 
     public Player(GameItem gameItem, Vector3f position, Vector3f rotation, float scale) {
         super(gameItem, position, rotation, scale);
-        this.gameManager = new GameManager();
         this.gameItem = gameItem;
         this.position = position;
         this.rotation = rotation;
         this.scale = scale;
-        this.keyboard = GameManager.getKeyboard();
-        GameManager.getCamera().setPlayer(this);
     }
 
     @Override
@@ -61,9 +52,6 @@ public class Player extends Entity {
             super.getPosition().y = 20;
         }
 
-        //Update Camera
-        GameManager.getCamera().move();
-
     }
 
     @Override
@@ -76,17 +64,7 @@ public class Player extends Entity {
 
     @Override
     public void checkKeyboardInput() {
-        if (GameManager.isInitialized()) {
-            if (keyboard.isKeyDown(GLFW_KEY_W)) this.currentSpeed = RUN_SPEED;
-            else if (keyboard.isKeyDown(GLFW_KEY_S)) this.currentSpeed = -RUN_SPEED;
-            else this.currentSpeed = 0;
 
-            if (keyboard.isKeyDown(GLFW_KEY_D)) this.currentTurnSpeed = -TURN_SPEED;
-            else if (keyboard.isKeyDown(GLFW_KEY_A)) this.currentTurnSpeed = TURN_SPEED;
-            else this.currentTurnSpeed = 0;
-
-            if (keyboard.isKeyDown(GLFW_KEY_SPACE)) this.jump();
-        }
     }
 
     public GameItem getGameItem() {

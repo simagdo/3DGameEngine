@@ -1,6 +1,7 @@
 package de.simagdo.engine.graph.shadow;
 
 import de.simagdo.engine.graph.Transformation;
+import de.simagdo.engine.graph.camera.Camera;
 import de.simagdo.engine.graph.lights.DirectionalLight;
 import de.simagdo.engine.window.Window;
 import org.joml.Matrix4f;
@@ -46,8 +47,8 @@ public class ShadowCascade {
 
     public void update(Window window, Matrix4f viewMatrix, DirectionalLight light) {
         // Build projection view matrix for this cascade
-        float aspectRatio = (float) window.getWidth() / (float) window.getHeight();
-        projViewMatrix.setPerspective(Window.FOV, aspectRatio, zNear, zFar);
+        float aspectRatio = (float) window.getPixelWidth() / (float) window.getPixelHeight();
+        projViewMatrix.setPerspective(Camera.FOV, aspectRatio, zNear, zFar);
         projViewMatrix.mul(viewMatrix);
 
         // Calculate frustum corners in world space

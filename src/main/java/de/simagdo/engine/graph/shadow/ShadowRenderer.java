@@ -24,7 +24,7 @@ public class ShadowRenderer {
 
     public static final int NUM_CASCADES = 3;
 
-    public static final float[] CASCADE_SPLITS = new float[]{Window.Z_FAR / 20.0f, Window.Z_FAR / 10.0f, Window.Z_FAR};
+    public static final float[] CASCADE_SPLITS = new float[]{Camera.FAR_PLANE / 20.0f, Camera.FAR_PLANE / 10.0f, Camera.FAR_PLANE};
     private ShaderProgram depthShaderProgram;
     private List<ShadowCascade> shadowCascades;
     private ShadowBuffer shadowBuffer;
@@ -40,7 +40,7 @@ public class ShadowRenderer {
 
         setupDepthShader();
 
-        float zNear = Window.Z_NEAR;
+        float zNear = Camera.NEAR_PLANE;
         for (int i = 0; i < NUM_CASCADES; i++) {
             ShadowCascade shadowCascade = new ShadowCascade(zNear, CASCADE_SPLITS[i]);
             this.shadowCascades.add(shadowCascade);

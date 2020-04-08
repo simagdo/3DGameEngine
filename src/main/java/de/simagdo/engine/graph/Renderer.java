@@ -135,20 +135,11 @@ public class Renderer {
     public void render(Window window, Camera camera, Scene scene, boolean sceneChanged) {
         this.clear();
 
-        if (window.getWindowOptions().frustumCulling) {
-            this.frustumCullingFilter.updateFrustum(window.getProjectionMatrix(), camera.getViewMatrix());
-            this.frustumCullingFilter.filter(scene.getMeshMap());
-            this.frustumCullingFilter.filter(scene.getInstancedMeshMap());
-        }
-
         //Render Depth Map before View Ports have been set up
         if (scene.isRenderShadows() && sceneChanged)
             this.shadowRenderer.render(window, scene, camera, this.transformation, this);
 
-        glViewport(0, 0, window.getWidth(), window.getHeight());
-
-        //Update Projection and View Atrices once per render cycle
-        window.updateProjectionMatrix();
+        glViewport(0, 0, window.getPixelWidth(), window.getPixelHeight());
 
         //Render Scene
         this.renderScene(window, camera, scene);
@@ -170,7 +161,7 @@ public class Renderer {
 
         //Update Projection Matrix
         Matrix4f viewMatrix = camera.getViewMatrix();
-        Matrix4f projectionMatrix = window.getProjectionMatrix();
+        Matrix4f projectionMatrix = camera.getProjectionMatrix();
         this.sceneShaderProgram.setUniform("viewMatrix", viewMatrix);
         this.sceneShaderProgram.setUniform("projectionMatrix", projectionMatrix);
 
@@ -259,7 +250,7 @@ public class Renderer {
             this.skyBoxShaderProgram.setUniform("texture_sampler", 0);
 
             //Update projection Matrix
-            Matrix4f projectionMatrix = window.getProjectionMatrix();
+            Matrix4f projectionMatrix = camera.getProjectionMatrix();
             this.sceneShaderProgram.setUniform("projectionMatrix", projectionMatrix);
 
             Matrix4f viewMatrix = camera.getViewMatrix();
@@ -294,7 +285,7 @@ public class Renderer {
         Matrix4f viewMatrix = camera.getViewMatrix();
         this.particlesShaderProgram.setUniform("viewMatrix", viewMatrix);
         this.particlesShaderProgram.setUniform("texture_sampler", 0);
-        Matrix4f projectionMatrix = window.getProjectionMatrix();
+        Matrix4f projectionMatrix = camera.getProjectionMatrix();
         this.particlesShaderProgram.setUniform("projectionMatrix", projectionMatrix);
 
         IParticleEmitter[] emitters = scene.getParticleEmitters();
@@ -381,31 +372,28 @@ public class Renderer {
     }
 
     private void renderCrossHair(Window window) {
-        if (window.getWindowOptions().compatibleProfile) {
-            glPushMatrix();
-            glLoadIdentity();
+        glPushMatrix();
+        glLoadIdentity();
 
-            float inc = 0.05f;
-            glLineWidth(2.0f);
+        float inc = 0.05f;
+        glLineWidth(2.0f);
 
-            glBegin(GL_LINES);
+        glBegin(GL_LINES);
 
-            glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(1.0f, 1.0f, 1.0f);
 
-            //Horizontal Line
-            glVertex3f(-inc, 0.0f, 0.0f);
-            glVertex3f(+inc, 0.0f, 0.0f);
-            glEnd();
+        //Horizontal Line
+        glVertex3f(-inc, 0.0f, 0.0f);
+        glVertex3f(+inc, 0.0f, 0.0f);
+        glEnd();
 
-            //Vertical Line
-            glBegin(GL_LINES);
-            glVertex3f(0.0f, -inc, 0.0f);
-            glVertex3f(0.0f, +inc, 0.0f);
-            glEnd();
+        //Vertical Line
+        glBegin(GL_LINES);
+        glVertex3f(0.0f, -inc, 0.0f);
+        glVertex3f(0.0f, +inc, 0.0f);
+        glEnd();
 
-            glPopMatrix();
-
-        }
+        glPopMatrix();
     }
 
     private void renderButton(float x, float y, float width, float height) {
@@ -416,42 +404,6 @@ public class Renderer {
         glVertex2f(x + width, y + height);
         glVertex2f(x, y + height);
         glEnd();
-    }
-
-    /**
-     * Renders the three axis in space (For debugging purposes only
-     *
-     * @param camera
-     */
-    private void renderAxes(Window window, Camera camera) {
-        if (window.getWindowOptions().compatibleProfile) {
-            glPushMatrix();
-            glLoadIdentity();
-            float rotX = camera.getRotation().x;
-            float rotY = camera.getRotation().y;
-            float rotZ = 0;
-            glRotatef(rotX, 1.0f, 0.0f, 0.0f);
-            glRotatef(rotY, 0.0f, 1.0f, 0.0f);
-            glRotatef(rotZ, 0.0f, 0.0f, 1.0f);
-            glLineWidth(2.0f);
-
-            glBegin(GL_LINES);
-            // X Axis
-            glColor3f(1.0f, 0.0f, 0.0f);
-            glVertex3f(0.0f, 0.0f, 0.0f);
-            glVertex3f(1.0f, 0.0f, 0.0f);
-            // Y Axis
-            glColor3f(0.0f, 1.0f, 0.0f);
-            glVertex3f(0.0f, 0.0f, 0.0f);
-            glVertex3f(0.0f, 1.0f, 0.0f);
-            // Z Axis
-            glColor3f(1.0f, 1.0f, 1.0f);
-            glVertex3f(0.0f, 0.0f, 0.0f);
-            glVertex3f(0.0f, 0.0f, 1.0f);
-            glEnd();
-
-            glPopMatrix();
-        }
     }
 
     public void cleanUp() {

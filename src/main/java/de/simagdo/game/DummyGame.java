@@ -46,7 +46,6 @@ public class DummyGame implements IGameLogic {
 
     public DummyGame() {
         this.renderer = new Renderer();
-        this.camera = new Camera();
         this.cameraInc = new Vector3f(0.0f, 0.0f, 0.0f);
         this.angleInc = 0;
         this.lightAngle = 90;
@@ -97,8 +96,6 @@ public class DummyGame implements IGameLogic {
         this.camera.getPosition().x = 0.25f;
         this.camera.getPosition().y = 6.5f;
         this.camera.getPosition().z = 15.0f;
-        this.camera.getRotation().x = 25.0f;
-        this.camera.getRotation().y = 15.0f;
 
     }
 
@@ -189,12 +186,6 @@ public class DummyGame implements IGameLogic {
         lightDirection.x = 0;
         lightDirection.y = yValue;
         lightDirection.z = zValue;
-
-        //Update View Matrix
-        this.camera.updateViewMatrix();
-
-        this.player.move();
-        GameManager.getCamera().move();
 
     }
 

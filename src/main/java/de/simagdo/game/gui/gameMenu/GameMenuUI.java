@@ -37,10 +37,6 @@ public class GameMenuUI extends UIComponent {
         this.showPage(null);
     }
 
-    protected void closeGame() {
-        this.engine.close();
-    }
-
     private void addPage(UIComponent page) {
         super.addInStyle(page, ConstraintFactory.getRelative(0, CONTENT_Y, 1f, 1f - CONTENT_Y));
         this.currentPages.push(page);

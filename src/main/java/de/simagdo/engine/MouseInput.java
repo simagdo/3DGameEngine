@@ -6,6 +6,7 @@ import org.joml.Vector2f;
 
 import static org.lwjgl.glfw.GLFW.*;
 
+//TODO Remove Class later on
 public class MouseInput {
 
     private final Vector2d previousPos;
@@ -22,7 +23,7 @@ public class MouseInput {
     }
 
     public void init(Window window) {
-        glfwSetCursorPosCallback(window.getWindowHandle(), (windowHandle, xPos, yPos) -> {
+        /*glfwSetCursorPosCallback(window.getWindowHandle(), (windowHandle, xPos, yPos) -> {
             currentPos.x = xPos;
             currentPos.y = yPos;
         });
@@ -32,7 +33,7 @@ public class MouseInput {
         glfwSetMouseButtonCallback(window.getWindowHandle(), (windowHandle, button, action, mode) -> {
             leftButtonPressed = button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS;
             rightButtonPressed = button == GLFW_MOUSE_BUTTON_2 && action == GLFW_PRESS;
-        });
+        });*/
     }
 
     public Vector2d getPreviousPos() {

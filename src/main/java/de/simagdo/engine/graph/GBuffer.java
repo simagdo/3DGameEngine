@@ -26,8 +26,8 @@ public class GBuffer {
         this.textureIds = new int[TOTAL_TEXTURES];
         glGenTextures(this.textureIds);
 
-        this.width = window.getWidth();
-        this.height = window.getHeight();
+        this.width = window.getPixelWidth();
+        this.height = window.getPixelHeight();
 
         // Create textures for position, diffuse color, specular color, normal, shadow factor and depth
         // All coordinates are in world coordinates system

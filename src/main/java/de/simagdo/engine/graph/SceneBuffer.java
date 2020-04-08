@@ -24,7 +24,7 @@ public class SceneBuffer {
         glGenTextures(textureIds);
         this.textureId = textureIds[0];
         glBindTexture(GL_TEXTURE_2D, this.textureId);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, window.getWidth(), window.getHeight(), 0, GL_RGB, GL_FLOAT, (ByteBuffer) null);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, window.getPixelWidth(), window.getPixelHeight(), 0, GL_RGB, GL_FLOAT, (ByteBuffer) null);
 
         // For sampling
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

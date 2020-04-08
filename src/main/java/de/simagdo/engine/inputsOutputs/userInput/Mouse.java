@@ -26,9 +26,9 @@ public class Mouse {
     }
 
     public void init() {
-        this.addMoveListener(window.getWindowHandle());
-        this.addClickListener(window.getWindowHandle());
-        this.addScrollListener(window.getWindowHandle());
+        this.addMoveListener(window.getWindowId());
+        this.addClickListener(window.getWindowId());
+        this.addScrollListener(window.getWindowId());
     }
 
     public boolean isButtonDown(MouseButton button) {
@@ -89,8 +89,8 @@ public class Mouse {
 
     private void addMoveListener(long windowId) {
         GLFW.glfwSetCursorPosCallback(windowId, (currentWidnow, xPos, yPos) -> {
-            this.x = (float) (xPos / this.window.getWidth());
-            this.y = (float) (yPos / this.window.getHeight());
+            this.x = (float) (xPos / this.window.getDesiredWidth());
+            this.y = (float) (yPos / this.window.getDesiredHeight());
         });
     }
 

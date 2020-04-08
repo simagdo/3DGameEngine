@@ -28,7 +28,7 @@ public class Hud {
     private int counter;
 
     public void init(Window window) throws Exception {
-        this.vg = window.getWindowOptions().antialiasing ? nvgCreate(NVG_ANTIALIAS | NVG_STENCIL_STROKES) : nvgCreate(NVG_STENCIL_STROKES);
+        nvgCreate(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
         if (this.vg == NULL) {
             throw new Exception("Could not init nanovg");
         }
@@ -47,23 +47,23 @@ public class Hud {
     }
 
     public void render(Window window) {
-        nvgBeginFrame(this.vg, window.getWidth(), window.getHeight(), 1);
+        nvgBeginFrame(this.vg, window.getPixelWidth(), window.getPixelHeight(), 1);
 
         // Upper ribbon
         nvgBeginPath(this.vg);
-        nvgRect(this.vg, 0, window.getHeight() - 100, window.getWidth(), 50);
+        nvgRect(this.vg, 0, window.getPixelHeight() - 100, window.getPixelWidth(), 50);
         nvgFillColor(this.vg, rgba(0x23, 0xa1, 0xf1, 200, colour));
         nvgFill(this.vg);
 
         // Lower ribbon
         nvgBeginPath(this.vg);
-        nvgRect(this.vg, 0, window.getHeight() - 50, window.getWidth(), 10);
+        nvgRect(this.vg, 0, window.getPixelHeight() - 50, window.getPixelWidth(), 10);
         nvgFillColor(this.vg, rgba(0xc1, 0xe3, 0xf9, 200, colour));
         nvgFill(this.vg);
 
-        glfwGetCursorPos(window.getWindowHandle(), posx, posy);
+        glfwGetCursorPos(window.getWindowId(), posx, posy);
         int xcenter = 50;
-        int ycenter = window.getHeight() - 75;
+        int ycenter = window.getPixelHeight() - 75;
         int radius = 20;
         int x = (int) posx.get(0);
         int y = (int) posy.get(0);
@@ -85,19 +85,17 @@ public class Hud {
             nvgFillColor(this.vg, rgba(0x23, 0xa1, 0xf1, 255, colour));
 
         }
-        nvgText(this.vg, 50, window.getHeight() - 87, String.format("%02d", counter));
+        nvgText(this.vg, 50, window.getPixelHeight() - 87, String.format("%02d", counter));
 
         // Render hour text
         nvgFontSize(this.vg, 40.0f);
         nvgFontFace(this.vg, FONT_NAME);
         nvgTextAlign(this.vg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
         nvgFillColor(this.vg, rgba(0xe6, 0xea, 0xed, 255, colour));
-        nvgText(this.vg, window.getWidth() - 150, window.getHeight() - 95, dateFormat.format(new Date()));
+        nvgText(this.vg, window.getPixelWidth() - 150, window.getPixelHeight() - 95, dateFormat.format(new Date()));
 
         nvgEndFrame(this.vg);
 
-        // Restore state
-        window.restoreState();
     }
 
     public void incCounter() {

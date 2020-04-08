@@ -14,9 +14,9 @@ public class Keyboard {
     private Set<Integer> keysDown = new HashSet<>();
     private String charsThisFrame = "";
 
-    public void init(Window window) {
-        this.addKeyListener(window.getWindowHandle());
-        this.addTextListener(window.getWindowHandle());
+    public Keyboard(long windowId) {
+        this.addKeyListener(windowId);
+        this.addTextListener(windowId);
     }
 
     public void update() {

@@ -7,7 +7,8 @@ public enum GameState implements State {
     SPLASH_SCREEN(),
     MAIN_MENU(),
     UI(),
-    NORMAL();
+    NORMAL(),
+    CAMERA();
 
     @Override
     public int getPriority() {
