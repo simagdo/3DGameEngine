@@ -106,4 +106,9 @@ public class GameEngine {
     public GameConfigs getConfigs() {
         return configs;
     }
+
+    public float getDeltaSeconds() {
+        return this.timer.getDelta();
+    }
+
 }

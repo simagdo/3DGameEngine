@@ -41,12 +41,9 @@ public class Camera implements ICamera {
         this.controls = controls;
         this.window = window;
 
-        window.addSizeChangeListener(new WindowSizeListener() {
-            @Override
-            public void sizeChanged(int width, int height) {
+        this.calculateProjectionMatrix();
 
-            }
-        });
+        window.addSizeChangeListener((width, height) -> calculateProjectionMatrix());
 
     }
 
@@ -188,4 +185,11 @@ public class Camera implements ICamera {
         for (Listener listener : this.moveListeners) listener.eventOccurred();
     }
 
+    public void setYaw(float yaw) {
+        this.yaw = yaw;
+    }
+
+    public void setPitch(SmoothFloat pitch) {
+        this.pitch = pitch;
+    }
 }

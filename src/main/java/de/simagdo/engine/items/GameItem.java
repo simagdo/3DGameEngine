@@ -4,7 +4,9 @@ import de.simagdo.engine.graph.Mesh;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-public class GameItem {
+import java.io.Serializable;
+
+public class GameItem implements Serializable {
 
     private Mesh[] meshes;
     private final Vector3f position;

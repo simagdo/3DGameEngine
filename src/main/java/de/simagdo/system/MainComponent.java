@@ -25,9 +25,11 @@ public class MainComponent {
             glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
 
             while (!glfwWindowShouldClose(GameManager.getEngine().getWindow().getWindowId())) {
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                glfwSwapBuffers(GameManager.getEngine().getWindow().getWindowId());
+                //glfwSwapBuffers(GameManager.getEngine().getWindow().getWindowId());
+
+                GameManager.update();
 
             }
 
