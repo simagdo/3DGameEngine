@@ -12,8 +12,8 @@ public class CameraControls implements ICameraControls, UserInput {
 
     private final Mouse mouse;
     private final Keyboard keyboard;
-    private boolean enabled = false;
-    private boolean keyboardEnabled = false;
+    private boolean enabled = true;
+    private boolean keyboardEnabled = true;
 
     public CameraControls(Mouse mouse, Keyboard keyboard) {
         GameManager.getEngine().getStateManager().registerUser(this, GameState.NORMAL);
@@ -46,22 +46,22 @@ public class CameraControls implements ICameraControls, UserInput {
 
     @Override
     public boolean goRight() {
-        return !this.keyboardEnabled ? false : this.keyboard.isKeyDown(GLFW.GLFW_KEY_D);
+        return this.keyboardEnabled && this.keyboard.isKeyDown(GLFW.GLFW_KEY_D);
     }
 
     @Override
     public boolean goLeft() {
-        return !this.keyboardEnabled ? false : this.keyboard.isKeyDown(GLFW.GLFW_KEY_A);
+        return this.keyboardEnabled && this.keyboard.isKeyDown(GLFW.GLFW_KEY_A);
     }
 
     @Override
     public boolean goForwards() {
-        return !this.keyboardEnabled ? false : this.keyboard.isKeyDown(GLFW.GLFW_KEY_W);
+        return this.keyboardEnabled && this.keyboard.isKeyDown(GLFW.GLFW_KEY_W);
     }
 
     @Override
     public boolean goBackwards() {
-        return !this.keyboardEnabled ? false : this.keyboard.isKeyDown(GLFW.GLFW_KEY_S);
+        return this.keyboardEnabled && this.keyboard.isKeyDown(GLFW.GLFW_KEY_S);
     }
 
     @Override

@@ -23,9 +23,6 @@ public class Mouse {
 
     public Mouse(Window window) {
         this.window = window;
-    }
-
-    public void init() {
         this.addMoveListener(window.getWindowId());
         this.addClickListener(window.getWindowId());
         this.addScrollListener(window.getWindowId());

@@ -5,6 +5,7 @@ import de.simagdo.engine.graph.text.Texture;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.MemoryUtil;
 
+import java.io.Serializable;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import static org.lwjgl.opengl.GL11.GL_FLOAT;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 
-public class Mesh {
+public class Mesh implements Serializable {
 
     protected final int vaoId;
     protected final List<Integer> vboIdList;

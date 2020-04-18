@@ -17,11 +17,9 @@ public class GameEngine {
     private final Timer timer;
     private double lastFPS;
     private int fps;
-    private String windowTitle;
     private final Keyboard keyboard;
     private final Mouse mouse;
     private final StateManager stateManager;
-    private Camera camera;
     GameConfigs configs;
 
     public GameEngine(GameConfigs configs) {
@@ -35,7 +33,7 @@ public class GameEngine {
     }
 
     private Window setUpWindow() {
-        Window window = Window.newWindow(this.configs.windowWidth, this.configs.windowHeight, this.configs.windowTitle)
+        Window window = Window.newWindow(this.configs.windowWidth, this.configs.windowHeight, this.configs.windowTitle, this.configs.windowOptions)
                 .setVSync(this.configs.vSync)
                 .create();
         window.addSizeChangeListener((width, height) -> GL11.glViewport(0, 0, width, height));
@@ -83,10 +81,6 @@ public class GameEngine {
         return fps;
     }
 
-    public String getWindowTitle() {
-        return windowTitle;
-    }
-
     public Keyboard getKeyboard() {
         return keyboard;
     }
@@ -97,10 +91,6 @@ public class GameEngine {
 
     public StateManager getStateManager() {
         return stateManager;
-    }
-
-    public Camera getCamera() {
-        return camera;
     }
 
     public GameConfigs getConfigs() {

@@ -36,16 +36,18 @@ public class Scene {
     public void setGameItems(GameItem[] gameItems) {
         // Create a map of meshes to speed up rendering
         for (GameItem gameItem : gameItems) {
-            Mesh[] meshes = gameItem.getMeshes();
-            for (Mesh mesh : meshes) {
-                boolean instancedMesh = mesh instanceof InstancedMesh;
-                List<GameItem> list = instancedMesh ? this.instancedMeshMap.get(mesh) : this.meshMap.get(mesh);
-                if (list == null) {
-                    list = new ArrayList<>();
-                    if (instancedMesh) this.instancedMeshMap.put((InstancedMesh) mesh, list);
-                    else this.meshMap.put(mesh, list);
+            if (gameItem != null) {
+                Mesh[] meshes = gameItem.getMeshes();
+                for (Mesh mesh : meshes) {
+                    boolean instancedMesh = mesh instanceof InstancedMesh;
+                    List<GameItem> list = instancedMesh ? this.instancedMeshMap.get(mesh) : this.meshMap.get(mesh);
+                    if (list == null) {
+                        list = new ArrayList<>();
+                        if (instancedMesh) this.instancedMeshMap.put((InstancedMesh) mesh, list);
+                        else this.meshMap.put(mesh, list);
+                    }
+                    list.add(gameItem);
                 }
-                list.add(gameItem);
             }
         }
     }

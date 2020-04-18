@@ -4,18 +4,17 @@ import de.simagdo.engine.GameEngine;
 import de.simagdo.engine.Scene;
 import de.simagdo.engine.SceneLight;
 import de.simagdo.engine.graph.Attenuation;
-import de.simagdo.engine.graph.Mesh;
 import de.simagdo.engine.graph.Renderer;
 import de.simagdo.engine.graph.camera.Camera;
 import de.simagdo.engine.graph.camera.CameraControls;
 import de.simagdo.engine.graph.lights.DirectionalLight;
 import de.simagdo.engine.graph.lights.PointLight;
-import de.simagdo.engine.items.GameItem;
-import de.simagdo.engine.items.Terrain;
-import de.simagdo.engine.loaders.assimp.StaticMeshesLoader;
+import de.simagdo.engine.inputsOutputs.userInput.Keyboard;
+import de.simagdo.engine.toolbox.misc.SmoothFloat;
 import de.simagdo.engine.world.World;
 import de.simagdo.game.managing.GameConfigs;
 import org.joml.Vector3f;
+import org.lwjgl.glfw.GLFW;
 
 public class GameManager {
 
@@ -24,21 +23,23 @@ public class GameManager {
     private static Renderer renderer;
     private static World world;
     private static Scene scene;
+    private static Thread gameLoopThread;
 
     public static void init(GameConfigs configs) throws Exception {
+        gameLoopThread = new Thread("GAME_LOOP_THREAD");
         engine = new GameEngine(configs);
         camera = setUpCamera();
         scene = setUpScene();
         setupLights();
-        renderer = setUpRenderer();
         world = setUpWorld();
+        renderer = setUpRenderer();
     }
 
     private static Renderer setUpRenderer() throws Exception {
         Renderer renderer = new Renderer();
         renderer.init(getEngine().getWindow());
 
-        renderer.render(getEngine().getWindow(), getCamera(), scene, false);
+        //renderer.render(getEngine().getWindow(), getCamera(), scene, true);
 
         return renderer;
     }
@@ -47,14 +48,33 @@ public class GameManager {
         Scene scene = new Scene();
 
         /*Mesh[] terrainMesh = StaticMeshesLoader.load("models/terrain/terrain.obj", "/models/terrain");
-        GameItem terrain = new GameItem(terrainMesh);
-        terrain.setScale(100.0f);
-        terrain.setPosition(0.25f,6f,0.25f);
+        GameItem terrainTest = new GameItem(terrainMesh);
+        terrainTest.setScale(100.0f);
+        terrainTest.setPosition(0.25f,6f,0.25f);
 
-        scene.setGameItems(new GameItem[]{terrain});*/
+        //Save GameItem in File for Test purpose
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(new File("C:\\Users\\simag\\IdeaProjects\\3DGameEngine\\TerrainTest.txt"));
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
 
-        Terrain terrain = new Terrain(3, 10, -0.1f, 0.1f, "/textures/heightmap.png", "/textures/terrain.png", 40);
+            //Write Object to File
+            objectOutputStream.writeObject(terrainTest);
+
+            objectOutputStream.close();
+            fileOutputStream.close();
+
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+
+        scene.setGameItems(new GameItem[]{terrainTest});*/
+
+        /*Terrain terrain = new Terrain(3, 10, -0.1f, 0.1f, "/textures/heightmap.png", "/textures/terrain.png", 40);
         scene.setGameItems(terrain.getGameItems());
+
+        SkyBox skyBox = new SkyBox("models/skybox.obj", "/textures/skybox.png");
+        skyBox.setScale(50.0f);
+        scene.setSkyBox(skyBox);*/
 
         return scene;
     }
@@ -87,21 +107,57 @@ public class GameManager {
         camera.getPosition().x = 0.0f;
         camera.getPosition().y = 0.0f;
         camera.getPosition().z = -0.2f;
+        camera.setPitch(new SmoothFloat(0, 0));
         return camera;
     }
 
-    private static World setUpWorld() {
-        return new World().loadWorld();
+    private static World setUpWorld() throws Exception {
+        World world = new World(getScene());
+        world.generateWorld();
+        world.loadWorld();
+        return world;
+    }
+
+    public static void run() {
+        gameLoopThread.run();
+        try {
+            gameLoop();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            cleanUp();
+        }
+    }
+
+    protected static void gameLoop() {
+        float elapsedTime;
+        float accumulator = 0f;
+        float interval = 1f / GameEngine.TARGET_UPS;
+        boolean running = true;
+
+        while (running && !getEngine().getWindow().closeButtonPressed()) {
+            elapsedTime = getEngine().getTimer().getDelta();
+            accumulator += elapsedTime;
+
+            update();
+
+        }
+
+    }
+
+    protected static void render() {
+        getEngine().getWindow().update();
     }
 
     public static void update() {
-        getEngine().update();
         getCamera().move(getEngine().getDeltaSeconds());
-        //getRenderer().render(getEngine().getWindow(), getCamera(), getScene(), false);
+        getRenderer().render(getEngine().getWindow(), getCamera(), getScene(), false);
+        getEngine().update();
     }
 
     public static void cleanUp() {
-        engine.cleanUp();
+        getRenderer().cleanUp();
+        getEngine().cleanUp();
     }
 
     public static GameEngine getEngine() {
@@ -123,4 +179,9 @@ public class GameManager {
     public static Scene getScene() {
         return scene;
     }
+
+    public static boolean readyToClose() {
+        return getEngine().getWindow().closeButtonPressed();
+    }
+
 }

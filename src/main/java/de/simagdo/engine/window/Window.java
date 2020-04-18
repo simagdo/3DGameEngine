@@ -1,11 +1,7 @@
 package de.simagdo.engine.window;
 
+import de.simagdo.engine.inputsOutputs.windowing.Sync;
 import de.simagdo.engine.inputsOutputs.windowing.WindowSizeListener;
-import org.joml.Matrix4f;
-import org.lwjgl.glfw.Callbacks;
-import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
@@ -14,9 +10,6 @@ import java.util.List;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL.*;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class Window {
 
@@ -29,20 +22,24 @@ public class Window {
     private int heightScreenCoords;
     private boolean fullscreen;
     private boolean vSync;
-    private int fps;
+    private final Sync sync;
+    private final int fps;
+    private final WindowOptions options;
     private List<WindowSizeListener> listeners = new ArrayList<>();
 
-    public static WindowBuilder newWindow(int width, int height, String title) {
-        return new WindowBuilder(width, height, title);
+    public static WindowBuilder newWindow(int width, int height, String title, WindowOptions options) {
+        return new WindowBuilder(width, height, title, options);
     }
 
-    protected Window(long windowId, int desiredWidth, int desiredHeight, int fps, boolean fullscreen, boolean vSync) {
+    protected Window(long windowId, int desiredWidth, int desiredHeight, int fps, boolean fullscreen, boolean vSync, WindowOptions options) {
         this.windowId = windowId;
         this.desiredWidth = desiredWidth;
         this.desiredHeight = desiredHeight;
         this.fullscreen = fullscreen;
         this.vSync = vSync;
         this.fps = fps;
+        this.sync = new Sync(this.fps);
+        this.options = options;
         this.getInitialWindowSizes();
         this.addScreenSizeListener();
         this.addPixelSizeListener();
@@ -116,12 +113,20 @@ public class Window {
         this.vSync = vSync;
     }
 
+    public Sync getSync() {
+        return sync;
+    }
+
     public int getFps() {
         return fps;
     }
 
     public void setFps(int fps) {
-        this.fps = fps;
+        this.sync.setFps(fps);
+    }
+
+    public WindowOptions getOptions() {
+        return options;
     }
 
     public void addSizeChangeListener(WindowSizeListener listener) {
@@ -185,16 +190,21 @@ public class Window {
         heightBuffer.clear();
     }
 
+    public boolean closeButtonPressed() {
+        return glfwWindowShouldClose(this.windowId);
+    }
+
     public void update() {
         glfwSwapBuffers(this.windowId);
         glfwPollEvents();
+        this.sync.sync();
     }
 
     public void cleanUp() {
         glfwFreeCallbacks(this.windowId);
         glfwDestroyWindow(this.windowId);
         glfwTerminate();
-        glfwSetErrorCallback(null).free();
+        //glfwSetErrorCallback(null).free();
     }
 
     private void notifyListeners() {

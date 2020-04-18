@@ -9,6 +9,7 @@ public class GameSettings {
         configs.fps = 60;
         configs.windowWidth = 1920;
         configs.windowHeight = 1080;
+        configs.windowOptions.cullFace = true;
         return configs;
     }
 

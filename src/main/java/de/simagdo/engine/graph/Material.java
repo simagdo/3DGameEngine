@@ -4,7 +4,9 @@ import de.simagdo.engine.graph.text.Texture;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
-public class Material {
+import java.io.Serializable;
+
+public class Material implements Serializable {
 
     public static final Vector4f DEFAULT_COLOUR = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
     private Vector4f ambientColour;

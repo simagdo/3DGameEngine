@@ -3,8 +3,11 @@ package de.simagdo.engine.window;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL11;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class WindowBuilder {
@@ -21,11 +24,13 @@ public class WindowBuilder {
     private int maxHeight = GLFW_DONT_CARE;
     private int samples = 0;
     private long windowId;
+    private WindowOptions options;
 
-    protected WindowBuilder(int width, int height, String title) {
+    protected WindowBuilder(int width, int height, String title, WindowOptions options) {
         this.width = width;
         this.height = height;
         this.title = title;
+        this.options = options;
     }
 
     public Window create() {
@@ -38,7 +43,7 @@ public class WindowBuilder {
         this.setWindowHints(vidMode);
         this.windowId = this.createWindow(vidMode);
         this.applyWindowSettings();
-        return new Window(this.windowId, this.width, this.height, this.fps, this.fullscreen, this.vSync);
+        return new Window(this.windowId, this.width, this.height, this.fps, this.fullscreen, this.vSync, this.options);
     }
 
     private long createWindow(GLFWVidMode vidMode) {
@@ -64,6 +69,14 @@ public class WindowBuilder {
         glfwSwapInterval(this.vSync ? 1 : 0);
         glfwSetWindowSizeLimits(this.windowId, this.minWidth, this.minHeight, this.maxWidth, this.maxHeight);
         glfwShowWindow(this.windowId);
+        /*glEnable(GL_DEPTH_TEST);
+        if (this.options.showTriangles) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        if (this.options.cullFace) {
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK);
+        }*/
     }
 
     public WindowBuilder setVSync(boolean vSync) {

@@ -1,11 +1,13 @@
 package de.simagdo.engine.graph.camera;
 
+import de.simagdo.engine.inputsOutputs.userInput.Keyboard;
 import de.simagdo.engine.inputsOutputs.windowing.WindowSizeListener;
 import de.simagdo.engine.toolbox.misc.Listener;
 import de.simagdo.engine.toolbox.misc.SmoothFloat;
 import de.simagdo.engine.window.Window;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,19 +25,19 @@ public class Camera implements ICamera {
     public static final float FAR_PLANE = 1000;
     public static final float Y_OFFSET = 0.02f;
     public static final int SPEED = 3;
-    private Matrix4f projectionMatrix = new Matrix4f();
-    private Matrix4f viewMatrix = new Matrix4f();
-    private Vector3f position = new Vector3f(50, 0, 0);
-    private Vector3f target = new Vector3f(128, Y_OFFSET, 128);
-    private ICameraControls controls;
-    private Window window;
+    private final Matrix4f projectionMatrix = new Matrix4f();
+    private final Matrix4f viewMatrix = new Matrix4f();
+    private final Vector3f position = new Vector3f(50, 0, 0);
+    private final Vector3f target = new Vector3f(128, Y_OFFSET, 128);
+    private final ICameraControls controls;
+    private final Window window;
     private float yaw = 0;
     private SmoothFloat pitch = new SmoothFloat(10, 10);
-    private SmoothFloat angleAroundPalyer = new SmoothFloat(0, 10);
-    private SmoothFloat distanceFromPlayer = new SmoothFloat(10, 5);
-    private List<Listener> moveListeners = new ArrayList<>();
-    private SmoothFloat forwardSpeed = new SmoothFloat(0, 10);
-    private SmoothFloat sideSpeed = new SmoothFloat(0, 10);
+    private final SmoothFloat angleAroundPalyer = new SmoothFloat(0, 10);
+    private final SmoothFloat distanceFromPlayer = new SmoothFloat(10, 5);
+    private final List<Listener> moveListeners = new ArrayList<>();
+    private final SmoothFloat forwardSpeed = new SmoothFloat(0, 10);
+    private final SmoothFloat sideSpeed = new SmoothFloat(0, 10);
 
     public Camera(ICameraControls controls, Window window) {
         this.controls = controls;
@@ -77,10 +79,9 @@ public class Camera implements ICamera {
         return this.projectionMatrix;
     }
 
-    //TODO
     @Override
     public Matrix4f getProjectionViewMatrix() {
-        return null;
+        return this.projectionMatrix.mulAffine(this.viewMatrix, null);
     }
 
     public Vector3f getTarget() {
@@ -137,12 +138,12 @@ public class Camera implements ICamera {
     }
 
     private void dealWithInputs() {
-        if (this.controls.goForwards()) this.forwardSpeed.setTarget(-1);
-        else if (this.controls.goBackwards()) this.forwardSpeed.setTarget(1);
+        if (this.controls.goForwards()) this.forwardSpeed.setTarget(-10);
+        else if (this.controls.goBackwards()) this.forwardSpeed.setTarget(10);
         else this.forwardSpeed.setTarget(0);
 
-        if (this.controls.goRight()) this.sideSpeed.setTarget(1);
-        else if (this.controls.goLeft()) this.sideSpeed.setTarget(-1);
+        if (this.controls.goRight()) this.sideSpeed.setTarget(10);
+        else if (this.controls.goLeft()) this.sideSpeed.setTarget(-10);
         else this.sideSpeed.setTarget(0);
     }
 
@@ -185,8 +186,16 @@ public class Camera implements ICamera {
         for (Listener listener : this.moveListeners) listener.eventOccurred();
     }
 
+    public float getYaw() {
+        return yaw;
+    }
+
     public void setYaw(float yaw) {
         this.yaw = yaw;
+    }
+
+    public SmoothFloat getPitch() {
+        return pitch;
     }
 
     public void setPitch(SmoothFloat pitch) {

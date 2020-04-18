@@ -54,9 +54,7 @@ public class RegisteredUsers {
         Set<UserInput> users = this.registeredKeyboardUsers.get(state);
         if (users == null) return;
 
-        users.forEach(user -> {
-            user.enableKeyboardUse(enable);
-        });
+        users.forEach(user -> user.enableKeyboardUse(enable));
     }
 
 }

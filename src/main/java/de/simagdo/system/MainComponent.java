@@ -1,19 +1,11 @@
 package de.simagdo.system;
 
-import de.simagdo.engine.GameEngine;
-import de.simagdo.engine.IGameLogic;
-import de.simagdo.engine.window.WindowOptions;
-import de.simagdo.game.DummyGame;
+import de.simagdo.engine.world.chunk.Chunk;
 import de.simagdo.game.gui.main.GameManager;
 import de.simagdo.game.managing.GameConfigs;
 import de.simagdo.game.managing.GameSettings;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
 
 import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
-import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
-import static org.lwjgl.opengl.GL11.*;
 
 public class MainComponent {
 
@@ -22,16 +14,23 @@ public class MainComponent {
             GameConfigs configs = GameSettings.getConfig();
             GameManager.init(configs);
 
-            glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+            //GameManager.run();
 
-            while (!glfwWindowShouldClose(GameManager.getEngine().getWindow().getWindowId())) {
+            //glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+
+            /*while (!GameManager.readyToClose()) {
                 //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                //glfwSwapBuffers(GameManager.getEngine().getWindow().getWindowId());
+                glfwSwapBuffers(GameManager.getEngine().getWindow().getWindowId());
 
                 GameManager.update();
 
-            }
+            }*/
+
+            GameManager.cleanUp();
+
+            /*Chunk chunk = new Chunk(0,0);
+            chunk.createChunk();*/
 
         } catch (Exception e) {
             e.printStackTrace();

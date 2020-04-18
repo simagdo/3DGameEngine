@@ -6,9 +6,9 @@ import java.util.ArrayList;
 
 public interface IWorld {
 
-    public World generateWorld();
+    public void generateWorld() throws Exception;
 
-    public World loadWorld();
+    public void loadWorld() throws Exception;
 
     public void saveWorld();
 

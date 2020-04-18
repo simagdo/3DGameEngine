@@ -139,7 +139,7 @@ public class Renderer {
         if (scene.isRenderShadows() && sceneChanged)
             this.shadowRenderer.render(window, scene, camera, this.transformation, this);
 
-        glViewport(0, 0, window.getPixelWidth(), window.getPixelHeight());
+        //glViewport(0, 0, window.getPixelWidth(), window.getPixelHeight());
 
         //Render Scene
         this.renderScene(window, camera, scene);
