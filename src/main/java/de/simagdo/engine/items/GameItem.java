@@ -5,6 +5,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 public class GameItem implements Serializable {
 
@@ -16,6 +17,7 @@ public class GameItem implements Serializable {
     private boolean selected;
     private boolean insideFrustum;
     private boolean disableFrustumCulling;
+    private UUID uuid;
 
     public GameItem() {
         this.position = new Vector3f();
@@ -25,6 +27,7 @@ public class GameItem implements Serializable {
         this.selected = false;
         this.insideFrustum = true;
         this.disableFrustumCulling = false;
+        this.uuid = UUID.randomUUID();
     }
 
     public GameItem(Mesh mesh) {
@@ -117,6 +120,10 @@ public class GameItem implements Serializable {
 
     public void setDisableFrustumCulling(boolean disableFrustumCulling) {
         this.disableFrustumCulling = disableFrustumCulling;
+    }
+
+    public UUID getUuid() {
+        return uuid;
     }
 
     public void cleanUp() {

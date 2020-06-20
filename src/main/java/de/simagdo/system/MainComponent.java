@@ -6,6 +6,7 @@ import de.simagdo.game.managing.GameConfigs;
 import de.simagdo.game.managing.GameSettings;
 
 import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
+import static org.lwjgl.opengl.GL11.*;
 
 public class MainComponent {
 
@@ -18,14 +19,14 @@ public class MainComponent {
 
             //glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
 
-            /*while (!GameManager.readyToClose()) {
-                //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            while (!GameManager.readyToClose()) {
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 glfwSwapBuffers(GameManager.getEngine().getWindow().getWindowId());
 
                 GameManager.update();
 
-            }*/
+            }
 
             GameManager.cleanUp();
 

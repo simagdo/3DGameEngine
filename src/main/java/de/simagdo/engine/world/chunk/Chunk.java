@@ -16,7 +16,7 @@ import java.util.Arrays;
 public class Chunk implements IChunk {
 
     public static final int CHUNK_SIZE = 16;
-    public static final int CHUNKS_PER_FILE = 1;
+    public static final int CHUNKS_PER_FILE = 9;
     private final int absoluteX;
     private final int absoluteY;
     private final Tile[][][] tiles = new Tile[CHUNKS_PER_FILE][CHUNK_SIZE][CHUNK_SIZE];
@@ -57,56 +57,85 @@ public class Chunk implements IChunk {
     @Override
     public void saveChunksToJSON() {
         File file = new File("C:\\Users\\simag\\IdeaProjects\\3DGameEngine\\src\\main\\resources\\\\world\\chunk_" + this.absoluteX + "_" + this.absoluteY + ".json");
-        JSONObject main = new JSONObject();
+
+        JSONObject chunksFile = new JSONObject();
         JSONArray chunks = new JSONArray();
-        JSONArray posX = new JSONArray();
-        JSONArray posY = new JSONArray();
-        JSONObject position = new JSONObject();
-        JSONObject positions = new JSONObject();
 
-        /*for (int chunk = 0; chunk < CHUNKS_PER_FILE; chunk++) {
-            main.put("CHUNK_" + this.absoluteX + "_" + this.absoluteY, chunks);
-            for (int i = 0; i < CHUNK_SIZE; i++) {
-                JSONObject positionX = new JSONObject();
-                JSONArray positionY = new JSONArray();
+        for (int currentChunk = 0; currentChunk < this.tiles.length; currentChunk++) {
+            JSONObject chunk = new JSONObject();
+            chunksFile.put("Chunk_" + currentChunk, chunk);
 
-                for (int j = 0; j < CHUNK_SIZE; j++) {
+            for (int x = 0; x < this.tiles[currentChunk].length; x++) {
+                JSONObject xPosition = new JSONObject();
+                chunk.put("PositionX_" + x, xPosition);
 
-                }
+                for (int y = 0; y < this.tiles[currentChunk][x].length; y++) {
+                    JSONObject yPosition = new JSONObject();
+                    xPosition.put("PositionY_" + y, this.saveYPosition(this.tiles[currentChunk][x][y]));
 
-                positionX.put("PositionX_" + i, "Test");
-                chunks.add(positionX);
-            }
-        }*/
-
-        int chunkPosition = 0;
-        int positionX = 0;
-        int positionY = 0;
-        for (Tile[][] chunkTile : this.tiles) {
-
-            main.put("CHUNK_" + chunkPosition, chunks);
-            chunkPosition++;
-
-            for (Tile[] value : chunkTile) {
-
-                posX.add("PositionX_" + position);
-
-                //chunks.add("PositionX_" + positionX);
-                //chunks.add(positions);
-
-                positions.put("PositionX_" + positionX, position);
-
-                for (Tile tile : value) {
+                    //yPosition.put("Test_" + y, y);
 
                 }
+
             }
+
         }
 
         try (FileWriter fileWriter = new FileWriter(file)) {
-            fileWriter.write(main.toJSONString());
+            fileWriter.write(chunksFile.toJSONString());
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private JSONObject saveYPosition(Tile tile) {
+        JSONObject yPosition = new JSONObject();
+
+        System.out.println(tile.toString());
+
+        if (tile.getGameItem() != null) {
+            //yPosition.put("UUID", tile.getGameItem().getUuid().toString());
+            yPosition.put("GameItemType", tile.getGameItemType().name());
+            yPosition.put("ObjModel", tile.getObjModel());
+            yPosition.put("Texture", tile.getTexture());
+            yPosition.put("Scale", tile.getGameItem().getScale());
+            yPosition.put("Position", this.saveGameItemPosition(tile));
+            yPosition.put("Rotation", this.saveGameItemRotation(tile));
+        }
+
+        return yPosition;
+    }
+
+    /**
+     * Save the Position of the {@link GameItem} in the File
+     *
+     * @param tile which will be saved
+     * @return JSONObject which contains the saved Position.
+     */
+    private JSONObject saveGameItemPosition(Tile tile) {
+        JSONObject position = new JSONObject();
+
+        position.put("X", tile.getGameItem().getPosition().x);
+        position.put("Y", tile.getGameItem().getPosition().y);
+        position.put("Z", tile.getGameItem().getPosition().z);
+
+        return position;
+    }
+
+    /**
+     * Save the Rotation of the {@link GameItem} in the File
+     *
+     * @param tile which will be saved
+     * @return JSONObject which contains the saved Rotation.
+     */
+    private JSONObject saveGameItemRotation(Tile tile) {
+        JSONObject rotation = new JSONObject();
+
+        rotation.put("X", tile.getGameItem().getRotation().x);
+        rotation.put("Y", tile.getGameItem().getRotation().y);
+        rotation.put("Z", tile.getGameItem().getRotation().z);
+
+        return rotation;
     }
 
     @Override
